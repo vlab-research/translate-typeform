@@ -1,0 +1,19 @@
+{
+  "name": "@vlab-research/translate-typeform",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -w --collors lib/**/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vlab-research/translate-typeform.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vlab-research/translate-typeform/issues"
+  },
+  "homepage": "https://github.com/vlab-research/translate-typeform#readme"
+}
