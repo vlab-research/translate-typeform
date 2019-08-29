@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/vlab-research/translate-typeform/issues"
   },
-  "homepage": "https://github.com/vlab-research/translate-typeform#readme"
+  "homepage": "https://github.com/vlab-research/translate-typeform#readme",
+  "dependencies": {
+    "js-yaml": "^3.13.1"
+  }
 }
