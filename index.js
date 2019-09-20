@@ -17,6 +17,9 @@ function addCustomType(field) {
       if (params && params.type) {
         return {...field, type: params.type, md: params}
       }
+      if (params) {
+        return {...field, md: params}
+      }
     }
     catch (e) {
       // yaml parsing error?
