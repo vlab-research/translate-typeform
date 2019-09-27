@@ -73,7 +73,8 @@ const lookup = {
   short_text: alwaysTrue,
   long_text: alwaysTrue,
   share: validateStatement,
-  webview: validateStatement
+  webview: validateStatement,
+  wait: validateStatement
 }
 
 // should just get messages directly?

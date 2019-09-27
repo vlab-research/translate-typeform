@@ -191,6 +191,9 @@ const translateShare = (data, ref) => {
   return response
 }
 
+
+const translateWait = translateShortText
+
 const translateWebview = (data, ref) => {
   const { url, buttonText, wait } = data.md
   const response = {
@@ -229,7 +232,8 @@ const lookup = {
   'opinion_scale': translateOpinionScale,
   'rating': translateRatings,
   'share': translateShare,
-  'webview': translateWebview
+  'webview': translateWebview,
+  'wait': translateWait
 }
 
 function translator(question) {
