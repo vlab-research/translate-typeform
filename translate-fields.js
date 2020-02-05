@@ -193,7 +193,7 @@ const translateShare = (data, ref) => {
 
 
 const translateWait = translateShortText
-const translateStitch = translateShortStitch
+const translateStitch = translateShortText
 
 const translateWebview = (data, ref) => {
   const { url, buttonText, wait } = data.md
