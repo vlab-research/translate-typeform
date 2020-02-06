@@ -1,4 +1,5 @@
 const {translator}= require('./translate-fields')
+const emailValidator = require("email-validator");
 
 // allow for custom error messages from metadata!
 
@@ -60,6 +61,16 @@ function validateButton(field, messages) {
   return _validateMC(titles, messages)
 }
 
+function _isEmail(mail) {
+  return emailValidator.validate(mail)
+}
+
+function validateEmail(field, messages) {
+  return r => ({ message: 'Sorry, please enter a valid email address.',
+                 valid: _isEmail(r) })
+}
+
+
 
 const lookup = {
   number: validateNumber,
@@ -74,7 +85,9 @@ const lookup = {
   long_text: alwaysTrue,
   share: validateStatement,
   webview: validateStatement,
-  wait: validateStatement
+  wait: validateStatement,
+  phone_number: alwaysTrue,
+  email: validateEmail
 }
 
 // should just get messages directly?
