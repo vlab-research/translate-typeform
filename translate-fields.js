@@ -92,8 +92,17 @@ const translateEmail = data => {
   const response = translateShortText(data)
   response.quick_replies = [
     {
-      content_type: 'user_email',
-      title: 'send email',
+      content_type: 'user_email'
+    },
+  ]
+  return response
+}
+
+const translatePhone = data => {
+  const response = translateShortText(data)
+  response.quick_replies = [
+    {
+      content_type: 'user_phone_number'
     },
   ]
   return response
@@ -222,6 +231,7 @@ const lookup = {
   'short_text': translateShortText,
   'multiple_choice': translateMultipleChoice,
   'email': translateEmail,
+  'phone_number': translatePhone,
   'picture_choice': translatePictureChoice,
   'long_text': translateLongText,
   'welcome_screen': translateWelcomeScreen,
