@@ -70,7 +70,7 @@ function validateEmail(field, messages) {
                  valid: _isEmail(r) })
 }
 
-function _isMobile(number, country, mobile) {
+function _isPhone(number, country, mobile) {
   return !!phone(number, country, !mobile)[0]
 }
 
