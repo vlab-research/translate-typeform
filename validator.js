@@ -74,7 +74,7 @@ function _isMobile(number, country, mobile) {
   return !!phone(number, country, !mobile)[0]
 }
 
-function validatePhone(field, messages, mobile) {
+function validatePhone(field, messages) {
   const q = translator(field)
   const country = q.metadata.validate && q.metadata.validate.country
   const mobile = q.metadata.validate && q.metadata.validate.mobile
