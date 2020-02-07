@@ -70,16 +70,17 @@ function validateEmail(field, messages) {
                  valid: _isEmail(r) })
 }
 
-function _isPhone(number, country) {
-  return !!phone(number, country, true)[0]
+function _isMobile(number, country, mobile) {
+  return !!phone(number, country, !mobile)[0]
 }
 
-function validatePhone(field, messages) {
+function validatePhone(field, messages, mobile) {
   const q = translator(field)
   const country = q.metadata.validate && q.metadata.validate.country
+  const mobile = q.metadata.validate && q.metadata.validate.mobile
 
-  return r => ({ message: 'Sorry, please enter a valid phone number.',
-                 valid: _isPhone(r, country || '') })
+  return r => ({ message: `Sorry, please enter a valid ${mobile ? 'mobile' : 'phone'} number.`,
+                 valid: _isPhone(r, country || '', mobile) })
 }
 
 
