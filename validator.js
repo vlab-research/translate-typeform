@@ -101,7 +101,7 @@ const lookup = {
   wait: validateStatement,
   phone_number: alwaysTrue,
   email: validateEmail,
-  phone: alwaysTrue
+  phone: validatePhone
 }
 
 // should just get messages directly?
