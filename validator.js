@@ -76,8 +76,9 @@ function _isPhone(number, country, mobile) {
 
 function validatePhone(field, messages) {
   const q = translator(field)
-  const country = q.metadata.validate && q.metadata.validate.country
-  const mobile = q.metadata.validate && q.metadata.validate.mobile
+  md = JSON.parse(q.metadata)
+  const country = md.validate && md.validate.country
+  const mobile = md.validate && md.validate.mobile
 
   return r => ({ message: `Sorry, please enter a valid ${mobile ? 'mobile' : 'phone'} number.`,
                  valid: _isPhone(r, country || '', mobile) })
