@@ -1,6 +1,6 @@
 const {translator}= require('./translate-fields')
-const emailValidator = require("email-validator");
-
+const emailValidator = require('email-validator')
+const phone = require('phone')
 // allow for custom error messages from metadata!
 
 const defaultMessages = {
@@ -70,6 +70,18 @@ function validateEmail(field, messages) {
                  valid: _isEmail(r) })
 }
 
+function _isPhone(number, country) {
+  return !!phone(number, country, true)[0]
+}
+
+function validatePhone(field, messages) {
+  const q = translator(field)
+  const country = q.metadata.validate && q.metadata.validate.country
+
+  return r => ({ message: 'Sorry, please enter a valid phone number.',
+                 valid: _isPhone(r, country || '') })
+}
+
 
 
 const lookup = {
@@ -87,7 +99,8 @@ const lookup = {
   webview: validateStatement,
   wait: validateStatement,
   phone_number: alwaysTrue,
-  email: validateEmail
+  email: validateEmail,
+  phone: alwaysTrue
 }
 
 // should just get messages directly?
