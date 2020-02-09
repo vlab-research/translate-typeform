@@ -19,7 +19,7 @@ describe('validator', () => {
   res.message.should.equal('Sorry, please enter a valid mobile number.')
   })
 
-  it.only('should validate when not a phone number', () => {
+  it('should validate when not a phone number', () => {
     const field = {type: 'phone_number', title: 'foo', ref: 'foo', md: {validate: { country: 'IN', mobile: false}}}
 
     const res = v.validator(field)('9999')
@@ -29,7 +29,9 @@ describe('validator', () => {
   it('should validate when a mobile number', () => {
     const field = {type: 'phone_number', title: 'foo', ref: 'foo', md: {validate: { country: 'IN', mobile: true}}}
 
-    const res = v.validator(field)('+918888000000')
+    let res = v.validator(field)('+918888000000')
+    res.valid.should.equal(true)
+    res = v.validator(field)(8888000000)
     res.valid.should.equal(true)
   })
 })

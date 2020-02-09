@@ -71,7 +71,7 @@ function validateEmail(field, messages) {
 }
 
 function _isPhone(number, country, mobile) {
-  return !!phone(number, country, !mobile)[0]
+  return !!phone(''+number, country, !mobile)[0]
 }
 
 function validatePhone(field, messages) {
