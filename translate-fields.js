@@ -205,7 +205,8 @@ const translateWait = translateShortText
 const translateStitch = translateShortText
 
 const translateWebview = (data, ref) => {
-  const { url, buttonText, wait } = data.md
+  const { url, buttonText, wait, extensions } = data.md
+
   const response = {
     "attachment":{
       "type":"template",
@@ -218,7 +219,8 @@ const translateWebview = (data, ref) => {
             "url": url,
             "title": buttonText || "View website",
             "webview_height_ratio": "full",
-            "messenger_extensions": true
+            // default extensions to true
+            "messenger_extensions": extensions === undefined ? true : extensions
           }
         ]
       }
