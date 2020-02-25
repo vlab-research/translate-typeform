@@ -204,6 +204,22 @@ const translateShare = (data, ref) => {
 const translateWait = translateShortText
 const translateStitch = translateShortText
 
+const translateNotify = (data, ref) => {
+
+  const response = {
+    attachment: {
+      type: "template",
+      payload: {
+        template_type: "one_time_notif_req",
+        title: data.title,
+        payload: JSON.stringify({ ref })
+      }
+    }
+  }
+
+  return response
+}
+
 const translateWebview = (data, ref) => {
   const { url, buttonText, wait, extensions } = data.md
 
@@ -247,7 +263,8 @@ const lookup = {
   'share': translateShare,
   'webview': translateWebview,
   'wait': translateWait,
-  'stitch': translateStitch
+  'stitch': translateStitch,
+  'notify': translateNotify
 }
 
 function translator(question) {
