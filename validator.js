@@ -100,6 +100,7 @@ const lookup = {
   share: validateStatement,
   webview: validateStatement,
   wait: validateStatement,
+  notify: validateStatement,
   phone_number: alwaysTrue,
   email: validateEmail,
   phone_number: validatePhone
