@@ -34,4 +34,32 @@ describe('validator', () => {
     res = v.validator(field)(8888000000)
     res.valid.should.equal(true)
   })
+
+
+  it('should validate numbers', () => {
+    const field = {type: 'number', title: 'foo', ref: 'foo'}
+
+    let res = v.validator(field)('918888000000')
+    res.valid.should.equal(true)
+    res = v.validator(field)(8888000000)
+    res.valid.should.equal(true)
+    res = v.validator(field)('8,888,000')
+    res.valid.should.equal(true)
+    res = v.validator(field)('8.888.000')
+    res.valid.should.equal(true)
+    res = v.validator(field)('88.000')
+    res.valid.should.equal(true)
+    res = v.validator(field)('1,000')
+    res.valid.should.equal(true)
+    res = v.validator(field)('1.0')
+    res.valid.should.equal(true)
+    res = v.validator(field)('-1.0')
+    res.valid.should.equal(true)
+    res = v.validator(field)('-0.04')
+    res.valid.should.equal(true)
+    res = v.validator(field)('8888 mil')
+    res.valid.should.equal(false)
+    res = v.validator(field)('five thousand')
+    res.valid.should.equal(false)
+  })
 })
