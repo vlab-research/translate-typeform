@@ -1,5 +1,6 @@
 const {translator}= require('./translate-fields')
 const emailValidator = require('email-validator')
+const pdn = require('parse-decimal-number')
 const phone = require('phone')
 // allow for custom error messages from metadata!
 
@@ -56,12 +57,7 @@ function validateStatement(field, messages) {
 }
 
 function _isNumber(num) {
-  if (typeof num === 'string') {
-    num = num.trim()
-    return !!num && num*0 === 0
-  }
-  // This assumes that if it's not a string, it's a number.
-  return true
+  return !Number.isNaN(pdn(num))
 }
 
 function validateNumber(field, messages) {
@@ -73,7 +69,7 @@ function _isEmail(mail) {
   return emailValidator.validate(mail)
 }
 
-function validateEmail(field, messages) {
+pppfunction validateEmail(field, messages) {
   return r => ({ message: messages['label.error.emailAddress'],
                  valid: _isEmail(r) })
 }
