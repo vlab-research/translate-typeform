@@ -4,31 +4,48 @@ const phone = require('phone')
 // allow for custom error messages from metadata!
 
 const defaultMessages = {
-  'label.error.mustEnter': 'Sorry, please try to answer the question again.',
-  'label.error.mustSelect': 'Sorry, please use the buttons provided to answer the question.'
+  'label.error.mustEnter': 'Sorry, that answer is not valid. Please try to answer the question again.',
+  'label.error.mustSelect': 'Sorry, please use the buttons provided to answer the question.',
+  'label.error.emailAddress': 'Sorry, please enter a valid email address.',
+  'label.error.range': 'Sorry, please enter a valid number.'
 }
 
-function _validateMC(titles, messages) {
+function _validateMC(r, titles, messages) {
 
   // Messenger will return us numbers in JSON,
   // but typeform mostly uses strings, except for booleans.
   // So we cast everything to strings, to compare with QR's
-
-  return r => ({ message: messages['label.error.mustSelect'],
-                 valid: titles.map(t => ''+t ).indexOf(''+r) !== -1 })
+  return { message: messages['label.error.mustSelect'],
+           valid: titles.map(t => ''+t ).indexOf(''+r) !== -1 }
 }
 
 function validateQR(field, messages) {
   const q = translator(field)
   const titles = q.quick_replies.map(r => r.title)
 
-  return _validateMC(titles, messages)
+  return r => _validateMC(r, titles, messages)
 }
+
+
+function validateButton(field, messages) {
+  const q = translator(field)
+
+  const titles = q.attachment.payload.buttons
+        .map(r => JSON.parse(r.payload).value)
+
+  return r => _validateMC(r.value, titles, messages)
+}
+
 
 function alwaysTrue(field, messages) {
 
   // should not need a message, it's always valid!
   return _ => ({ message: 'Error', valid: true })
+}
+
+function validateString(field, messages) {
+  return r => ({ message: messages['label.error.mustEnter'],
+                 valid: typeof r === 'string' })
 }
 
 function validateStatement(field, messages) {
@@ -47,18 +64,9 @@ function _isNumber(num) {
   return true
 }
 
-function validateNumber(field) {
-  return r => ({ message: 'Sorry, please enter a valid number.',
+function validateNumber(field, messages) {
+  return r => ({ message: messages['label.error.range'],
                  valid: _isNumber(r) })
-}
-
-function validateButton(field, messages) {
-  const q = translator(field)
-
-  const titles = q.attachment.payload.buttons
-        .map(r => JSON.parse(r.payload).value)
-
-  return _validateMC(titles, messages)
 }
 
 function _isEmail(mail) {
@@ -66,7 +74,7 @@ function _isEmail(mail) {
 }
 
 function validateEmail(field, messages) {
-  return r => ({ message: 'Sorry, please enter a valid email address.',
+  return r => ({ message: messages['label.error.emailAddress'],
                  valid: _isEmail(r) })
 }
 
@@ -76,7 +84,7 @@ function _isPhone(number, country, mobile) {
 
 function validatePhone(field, messages) {
   const q = translator(field)
-  md = JSON.parse(q.metadata)
+  const md = JSON.parse(q.metadata)
   const country = md.validate && md.validate.country
   const mobile = md.validate && md.validate.mobile
 
@@ -84,6 +92,16 @@ function validatePhone(field, messages) {
                  valid: _isPhone(r, country || '', mobile) })
 }
 
+function validateNotify(field, messages) {
+  const q = translator(field)
+  const md = JSON.parse(q.metadata)
+
+  return r => {
+    const valid = r.ref === md.ref
+    const message = messages['label.error.mustEnter']
+    return { message, valid }
+  }
+}
 
 
 const lookup = {
@@ -95,13 +113,12 @@ const lookup = {
   opinion_scale: validateQR,
   legal: validateButton,
   yes_no: validateButton,
-  short_text: alwaysTrue,
-  long_text: alwaysTrue,
+  short_text: validateString,
+  long_text: validateString,
   share: validateStatement,
   webview: validateStatement,
   wait: validateStatement,
-  notify: validateStatement,
-  phone_number: alwaysTrue,
+  notify: validateNotify,
   email: validateEmail,
   phone_number: validatePhone
 }
