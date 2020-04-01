@@ -143,7 +143,7 @@ describe('should translate questions that use an opinion scale', () => {
 
 
   it('quick_replies payload property should return the score and ref', () => {
-    for ([index, el] of translated.quick_replies.entries()) {
+    for (let [index, el] of translated.quick_replies.entries()) {
       JSON.parse(el.payload).value.should.equal('' + (index+1))
       JSON.parse(el.payload).ref.should.equal('foo')
       el.title.should.equal('' + (index+1))
@@ -155,7 +155,7 @@ describe('should translate questions that use an opinion scale', () => {
     const translated = translateFunctions.translateOpinionScale({...opinionScaleQuestion,
                                                                  properties: { steps: 5, start_at_one: false }})
 
-    for ([index, el] of translated.quick_replies.entries()) {
+    for (let [index, el] of translated.quick_replies.entries()) {
       JSON.parse(el.payload).value.should.equal('' + (index))
       el.title.should.equal('' + (index))
       el.content_type.should.equal('text')
@@ -166,7 +166,7 @@ describe('should translate questions that use an opinion scale', () => {
     const translated = translateFunctions.translateRatings({...opinionScaleQuestion,
                                                             properties: { steps: 5, start_at_one: undefined }})
 
-    for ([index, el] of translated.quick_replies.entries()) {
+    for (let [index, el] of translated.quick_replies.entries()) {
       JSON.parse(el.payload).value.should.equal('' + (index+1))
       el.title.should.equal('' + (index+1))
       el.content_type.should.equal('text')
@@ -236,7 +236,7 @@ describe('should translate questions with choices accompanied by pictures', () =
   })
 
   it('each element should have a image_url property', () => {
-    for ([index, el] of fbElements.entries()) {
+    for (let [index, el] of fbElements.entries()) {
       el.image_url.should.equal(tfChoices[index].attachment.href)
     }
   })
@@ -248,13 +248,13 @@ describe('should translate questions with choices accompanied by pictures', () =
   })
 
   it('each button should have a title equal to the choice label', () => {
-    for ([index, el] of fbElements.entries()) {
+    for (let [index, el] of fbElements.entries()) {
       el.buttons[0].should.have.property('title', `select ${tfChoices[index].label}`)
     }
   })
 
   it('each button should have a payload', () => {
-    for ([index, el] of fbElements.entries()) {
+    for (let [index, el] of fbElements.entries()) {
       el.buttons[0].should.have.property('payload', tfChoices[index].label)
     }
   })

@@ -183,7 +183,7 @@ function _shareButton(shareText, buttonText, url) {
   }
 }
 
-const translateShare = (data, ref) => {
+const translateShare = (data) => {
   const {url, shareText, buttonText } = data.md
 
   const response = {
@@ -220,8 +220,8 @@ const translateNotify = (data, ref) => {
   return response
 }
 
-const translateWebview = (data, ref) => {
-  const { url, buttonText, wait, extensions } = data.md
+const translateWebview = (data) => {
+  const { url, buttonText, extensions } = data.md
 
   const response = {
     "attachment":{
@@ -245,6 +245,25 @@ const translateWebview = (data, ref) => {
   return response
 }
 
+
+const translateAttachment = (data) => {
+  const { attachment } = data.md
+  const { type, url } = attachment
+
+  const response = {
+    "attachment":{
+      "type":type,
+      "payload":{
+        "url": url,
+        "is_reusable": true
+      }
+    }
+  }
+  return response
+}
+
+
+
 const lookup = {
   'short_text': translateShortText,
   'multiple_choice': translateMultipleChoice,
@@ -264,7 +283,8 @@ const lookup = {
   'webview': translateWebview,
   'wait': translateWait,
   'stitch': translateStitch,
-  'notify': translateNotify
+  'notify': translateNotify,
+  'attachment': translateAttachment
 }
 
 function translator(question) {
