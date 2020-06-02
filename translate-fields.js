@@ -1,18 +1,11 @@
 const translateShortText = data => {
   return { text: data.title }
 }
-//welcome_screen
-const translateWelcomeScreen = data => {
 
-  const response = translateShortText(data)
-  response.quick_replies = [
-    {
-      content_type: 'text',
-      title: data.properties.button_text,
-      payload: data.properties.button_text,
-    },
-  ]
-  return response
+//welcome_screen
+const translateWelcomeScreen = (data, ref) => {
+  const text = data.properties.button_text
+  return makeMultipleChoice(data.title, [{label: text}], ref)
 }
 
 const translateLongText = translateShortText

@@ -21,7 +21,7 @@ describe('should translate the welcome screen', () => {
     translated.quick_replies.forEach(reply => {
       reply.should.have.property('content_type', 'text')
       reply.should.have.property('title')
-      reply.should.have.property('payload', data.properties.button_text)
+      reply.should.have.property('payload', `{"value":"${data.properties.button_text}"}`)
     })
   })
 })
