@@ -40,7 +40,7 @@ function validateButton(field, messages) {
 function alwaysTrue(field, messages) {
 
   // should not need a message, it's always valid!
-  return _ => ({ message: 'Error', valid: true })
+  return __ => ({ message: 'Error', valid: true })
 }
 
 function validateString(field, messages) {
@@ -52,7 +52,7 @@ function validateStatement(field, messages) {
 
   // this could be made more generic, but enough for now.
   const {responseMessage} = field.md ? field.md : {}
-  return _ => ({ message: responseMessage || 'No response is necessary.', valid: false })
+  return __ => ({ message: responseMessage || 'No response is necessary.', valid: false })
 }
 
 function _isNumber(num) {
@@ -125,9 +125,19 @@ const lookup = {
   phone_number: validatePhone
 }
 
+
+function _validationMessages(messages = {}) {
+  return {...defaultMessages, ...messages}
+}
+
+function defaultMessage(messages = {}) {
+  messages = _validationMessages(messages)
+  return messages['label.error.mustEnter']
+}
+
 // should just get messages directly?
 function validator(field, messages = {}) {
-  messages = {...defaultMessages, ...messages}
+  messages = _validationMessages(messages)
 
   const fn = lookup[field.type]
   if (!fn) {
@@ -136,4 +146,5 @@ function validator(field, messages = {}) {
   return fn(field, messages)
 }
 
-module.exports = { validator }
+
+module.exports = { validator, defaultMessage }

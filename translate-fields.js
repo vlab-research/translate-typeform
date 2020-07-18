@@ -41,6 +41,7 @@ const makeMultipleChoice = (text, choices, ref) => {
   return response
 }
 
+
 const _makeSimpleChoice = (text, choices, ref) => {
   const response = {}
   const buttons = choices.map(choice => {
