@@ -7,6 +7,7 @@ const defaultMessages = {
   'label.error.mustEnter': 'Sorry, that answer is not valid. Please try to answer the question again.',
   'label.error.mustSelect': 'Sorry, please use the buttons provided to answer the question.',
   'label.error.emailAddress': 'Sorry, please enter a valid email address.',
+  'label.error.phoneNumber': 'Sorry, please enter a valid phone number.',
   'label.error.range': 'Sorry, please enter a valid number.'
 }
 
@@ -90,7 +91,7 @@ function validatePhone(field, messages) {
   const country = md.validate && md.validate.country
   const mobile = md.validate && md.validate.mobile
 
-  return r => ({ message: `Sorry, please enter a valid ${mobile ? 'mobile' : 'phone'} number.`,
+  return r => ({ message: messages['label.error.phoneNumber'],
                  valid: _isPhone(r, country || '', mobile) })
 }
 

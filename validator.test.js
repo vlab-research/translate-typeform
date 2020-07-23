@@ -14,15 +14,17 @@ describe('validator', () => {
   it('should validate when not a mobile', () => {
   const field = {type: 'phone_number', title: 'foo', ref: 'foo', md: {validate: { country: 'IN', mobile: true}}}
 
-  const res = v.validator(field)({ foo: 'bar'})
-
-  res.message.should.equal('Sorry, please enter a valid mobile number.')
+  const res = v.validator(field)('+914888000000')
+    
+  res.valid.should.equal(false)
+  res.message.should.equal('Sorry, please enter a valid phone number.')
   })
 
   it('should validate when not a phone number', () => {
     const field = {type: 'phone_number', title: 'foo', ref: 'foo', md: {validate: { country: 'IN', mobile: false}}}
 
     const res = v.validator(field)('9999')
+    res.valid.should.equal(false)
     res.message.should.equal('Sorry, please enter a valid phone number.')
   })
 
