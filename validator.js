@@ -8,7 +8,8 @@ const defaultMessages = {
   'label.error.mustSelect': 'Sorry, please use the buttons provided to answer the question.',
   'label.error.emailAddress': 'Sorry, please enter a valid email address.',
   'label.error.phoneNumber': 'Sorry, please enter a valid phone number.',
-  'label.error.range': 'Sorry, please enter a valid number.'
+  'label.error.range': 'Sorry, please enter a valid number.',
+  'label.buttonHint.default': "Hello, we just wanted to send a friendly follow up. If you would like to stop the survey, just ignore this message and we won't bother you again.",
 }
 
 function _validateMC(r, titles, messages) {
@@ -136,6 +137,11 @@ function defaultMessage(messages = {}) {
   return messages['label.error.mustEnter']
 }
 
+function followUpMessage(messages = {}) {
+  messages = _validationMessages(messages)
+  return messages['label.buttonHint.default']
+}
+
 // should just get messages directly?
 function validator(field, messages = {}) {
   messages = _validationMessages(messages)
@@ -148,4 +154,4 @@ function validator(field, messages = {}) {
 }
 
 
-module.exports = { validator, defaultMessage }
+module.exports = { validator, defaultMessage, followUpMessage }
