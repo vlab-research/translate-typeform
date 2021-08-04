@@ -214,6 +214,23 @@ const translateNotify = (data, ref) => {
   return response
 }
 
+const makeUrl = (url) => {
+  if (typeof url === 'string') {
+    return url
+  }
+
+  const {base, protocol='https', params={}} = url
+
+  if (!base) {
+    throw new Error(`Invalid URL object for creating a URL: ${url}`)
+  }
+
+  const p = new URLSearchParams(params)
+  const b = new URL(`${protocol}://${base}`)
+  b.search = p.toString()
+  return b.href
+}
+
 const translateWebview = (data) => {
   const { url, buttonText, extensions } = data.md
 
@@ -226,7 +243,7 @@ const translateWebview = (data) => {
         "buttons":[
           {
             "type":"web_url",
-            "url": url,
+            "url": makeUrl(url),
             "title": buttonText || "View website",
             "webview_height_ratio": "full",
             // default extensions to true
@@ -309,4 +326,5 @@ module.exports = {
   translatePictureChoice,
   translateDate,
   translateLegal,
+  makeUrl,
 }

@@ -259,3 +259,23 @@ describe('should translate questions with choices accompanied by pictures', () =
     }
   })
 })
+
+describe('makeUrl', () => {
+  it('does nothing when given a string to support legacy format', () => {
+    translateFunctions.makeUrl('foo').should.equal('foo')
+  })
+
+  it('throws an error when missing base', () => {
+    translateFunctions.makeUrl.bind(null, {}).should.throw('Invalid URL')
+  })
+
+  it('makes a url without any query params', () => {
+    translateFunctions.makeUrl({base: 'foo.com/bar'}).should.equal('https://foo.com/bar')
+  })
+
+  it('makes a url with any query params', () => {
+    translateFunctions
+      .makeUrl({base: 'foo.com/bar', params: {'baz': 'https://qux.com?fast=cars', 'id': 123}})
+      .should.equal('https://foo.com/bar?baz=https%3A%2F%2Fqux.com%3Ffast%3Dcars&id=123')
+  })
+})
