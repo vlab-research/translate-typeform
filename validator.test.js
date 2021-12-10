@@ -37,7 +37,6 @@ describe('validator', () => {
     res.valid.should.equal(true)
   })
 
-
   it('should validate numbers', () => {
     const field = {type: 'number', title: 'foo', ref: 'foo'}
 

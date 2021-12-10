@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha -w --colors './{,!(node_modules)/**}/*.test.js'",
+    "test-ci": "mocha --colors './{,!(node_modules)/**}/*.test.js'",
     "lint": "eslint ."
   },
   "repository": {
