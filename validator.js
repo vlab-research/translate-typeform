@@ -10,6 +10,7 @@ const defaultMessages = {
   'label.error.phoneNumber': 'Sorry, please enter a valid phone number.',
   'label.error.range': 'Sorry, please enter a valid number.',
   'label.buttonHint.default': "Hello, we just wanted to send a friendly follow up. If you would like to stop the survey, just ignore this message and we won't bother you again.",
+  'label.off': 'Sorry, the survey is closed.',
 }
 
 function _validateMC(r, titles, messages) {
@@ -132,6 +133,11 @@ function _validationMessages(messages = {}) {
   return {...defaultMessages, ...messages}
 }
 
+function offMessage(messages = {}) {
+  messages = _validationMessages(messages)
+  return messages['label.off']
+}
+
 function defaultMessage(messages = {}) {
   messages = _validationMessages(messages)
   return messages['label.error.mustEnter']
@@ -154,4 +160,4 @@ function validator(field, messages = {}) {
 }
 
 
-module.exports = { validator, defaultMessage, followUpMessage }
+module.exports = { validator, defaultMessage, followUpMessage, offMessage }
