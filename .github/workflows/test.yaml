@@ -1,11 +1,9 @@
 name: test
-on: [push]
+on: push
 jobs:
   test:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Build Docker image
-        run: docker build -t translate-typeform .
-      - name: Run tests inside container
-        run: docker run translate-typeform npm run test-ci
+      - name: Run tests
+        run: ./test.sh --is-ci
