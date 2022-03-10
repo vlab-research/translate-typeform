@@ -65,7 +65,12 @@ function _isNumber(num) {
     num = num.trim()
     return !!num && num*0 === 0
   }
-  // This assumes that if it's not a string, it's a number.
+
+  if (typeof num == "boolean") {
+    return false
+  }
+
+  // anything else must be a proper number
   return true
 }
 
@@ -103,7 +108,7 @@ function validateNotify(field, messages) {
 
   return r => {
     const valid = r.ref === md.ref
-    const message = messages['label.error.mustEnter']
+    const message = messages['label.error.mustSelect']
     return { message, valid }
   }
 }

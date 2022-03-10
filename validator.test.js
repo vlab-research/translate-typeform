@@ -15,7 +15,7 @@ describe('validator', () => {
   const field = {type: 'phone_number', title: 'foo', ref: 'foo', md: {validate: { country: 'IN', mobile: true}}}
 
   const res = v.validator(field)('+914888000000')
-    
+
   res.valid.should.equal(false)
   res.message.should.equal('Sorry, please enter a valid phone number.')
   })
@@ -61,6 +61,12 @@ describe('validator', () => {
     res = v.validator(field)('8888 mil')
     res.valid.should.equal(false)
     res = v.validator(field)('five thousand')
+    res.valid.should.equal(false)
+
+    // check booleans!
+    res = v.validator(field)(false)
+    res.valid.should.equal(false)
+    res = v.validator(field)(true)
     res.valid.should.equal(false)
   })
 })
