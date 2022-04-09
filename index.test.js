@@ -84,4 +84,18 @@ describe('addCustomType', () => {
     res.md.foo.should.equal("hello [thats fine] ok is that (ok?)")
   })
 
+
+  it('allows urls to pass through untouched', () => {
+    const field = _field({
+      type: 'statement',
+      properties: {description: "type: webview\nurl: https://gbvlinks.nandan.cloud?url=populationfoundation.in&id=\nbuttonText: Visit Population Foundation\nresponseMessage: Click on the button to visit the website\nextensions: false\nkeepMoving: true"}
+    })
+
+    const res = t.addCustomType(field)
+
+    res.md.url.should.equal("https://gbvlinks.nandan.cloud?url=populationfoundation.in&id=")
+  })
+
+
+
 })

@@ -16,7 +16,11 @@ function addCustomType(field) {
 
     // replace markdown links in description, we don't want that shit.
     mle(d, true).links.forEach(l => {
-      d = d.replace(l.raw, () => l.href)
+
+      // but only if they're actually markdown links (check for square brackets)
+      if (/\[[^\s]+\]/.test(l.raw)) {
+        d = d.replace(l.raw, () => l.href)
+      }
     })
 
 
