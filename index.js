@@ -1,6 +1,7 @@
 const t = require('./translate-fields')
 const v = require('./validator')
 const yaml = require('js-yaml')
+const mle = require('markdown-link-extractor');
 
 function translateForm(form, messages) {
   const f = {...form}
@@ -11,9 +12,21 @@ function translateForm(form, messages) {
 
 function addCustomType(field) {
   if (field.properties && field.properties.description) {
-    const d = field.properties.description.trim()
+    let d = field.properties.description.trim().replace(/\\_/g, '_')
+
+    // replace markdown links in description, we don't want that shit.
+    mle(d, true).links.forEach(l => {
+      d = d.replace(l.raw, () => l.href)
+    })
+
+
     try {
       const params = yaml.safeLoad(d)
+
+      if (typeof params !== 'object') {
+        return field
+      }
+
       if (params && params.type) {
         return {...field, type: params.type, md: params}
       }
