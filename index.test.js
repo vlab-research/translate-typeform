@@ -4,7 +4,7 @@ const _field = ({ref='foo', title='What do you think?', type='statement', proper
   return {id: ref, ref, title, properties, type}
 }
 
-describe.only('addCustomType', () => {
+describe('addCustomType', () => {
 
   it('does nothing if no description', () => {
     const field = _field({
