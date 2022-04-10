@@ -52,8 +52,20 @@ describe('addCustomType', () => {
   })
 
 
-  it('removes weird underscore escaping of typeform', () => {
+  it('removes weird underscore escaping of typeform in title as well', () => {
+    const field = _field({
+      title: 'hello {{hidden:e\\_other\\_value}}',
+      type: 'statement'
+    })
+    const res = t.addCustomType(field)
 
+    res.title.should.equal("hello {{hidden:e_other_value}}")
+  })
+
+
+
+
+  it('removes weird underscore escaping of typeform in description', () => {
     const field = _field({
       type: 'statement',
       properties: {description: '{"otherKey": "other\\_value"}'}
