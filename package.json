@@ -21,7 +21,6 @@
   "dependencies": {
     "email-validator": "^2.0.4",
     "js-yaml": "^3.14.0",
-    "markdown-link-extractor": "^2.0.1",
     "marked": "^4.0.13",
     "phone": "^2.4.4"
   },

@@ -1,7 +1,6 @@
 const t = require('./translate-fields')
 const v = require('./validator')
 const yaml = require('js-yaml')
-const mle = require('markdown-link-extractor');
 
 function translateForm(form, messages) {
   const f = {...form}
@@ -12,24 +11,8 @@ function translateForm(form, messages) {
 
 function addCustomType(field) {
 
-  // replace underscore escaping tha Typeform seems to do.
-  field.title = field.title.replace(/\\_/g, '_')
-
-
   if (field.properties && field.properties.description) {
-
-    // replace underscore escaping tha Typeform seems to do.
-    let d = field.properties.description.trim().replace(/\\_/g, '_')
-
-    // replace markdown links in description, we don't want that shit.
-    mle(d, true).links.forEach(l => {
-
-      // but only if they're actually markdown links (check for square brackets)
-      if (/\[[^\s]+\]/.test(l.raw)) {
-        d = d.replace(l.raw, () => l.href)
-      }
-    })
-
+    let d = field.properties.description.trim()
 
     try {
       const params = yaml.safeLoad(d)
