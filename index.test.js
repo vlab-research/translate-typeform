@@ -34,19 +34,29 @@ describe('addCustomType', () => {
       type: 'statement',
       properties: {description: '{"otherKey": "otherValue"}'}
     })
+    field.md = {foo: 'bar'}
+
     const res = t.addCustomType(field)
 
     res.md.otherKey.should.equal("otherValue")
     res.type.should.equal('statement')
+
+    // keeps existing md
+    res.md.foo.should.equal('bar')
   })
+
 
   it('adds overwrites type if type exists to field', () => {
 
     const field = _field({
       properties: {description: '{"type": "baz"}'}
     })
+    field.md = {foo: 'bar'}
     const res = t.addCustomType(field)
 
     res.type.should.equal('baz')
+
+    // keeps existing md
+    res.md.foo.should.equal('bar')
   })
 })

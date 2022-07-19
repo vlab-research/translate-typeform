@@ -22,10 +22,10 @@ function addCustomType(field) {
       }
 
       if (params && params.type) {
-        return {...field, type: params.type, md: params}
+        return {...field, type: params.type, md: {...field.md, ...params}}
       }
       if (params) {
-        return {...field, md: params}
+        return {...field, md: {...field.md, ...params}}
       }
     }
     catch (e) {
