@@ -260,6 +260,26 @@ describe('should translate questions with choices accompanied by pictures', () =
   })
 })
 
+describe('translateAttachment', () => {
+    const fn = translateFunctions.translateAttachment
+
+    it('works for url', () => {
+        const res = fn({md: {attachment: {type: 'image', url: 'foo'}}})
+
+        res.attachment.type.should.equal('image')
+        res.attachment.payload.url.should.equal('foo')
+    })
+
+
+    it('works for attachment_id', () => {
+        const res = fn({md: {attachment: {type: 'image', attachment_id: 'foo'}}})
+
+        res.attachment.type.should.equal('image')
+        res.attachment.payload.attachment_id.should.equal('foo')
+    })
+
+})
+
 describe('makeUrl', () => {
   it('does nothing when given a string to support legacy format', () => {
     translateFunctions.makeUrl('foo').should.equal('foo')

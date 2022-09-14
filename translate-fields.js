@@ -259,15 +259,23 @@ const translateWebview = (data) => {
 
 const translateAttachment = (data) => {
   const { attachment } = data.md
-  const { type, url } = attachment
+  const { type, url, attachment_id } = attachment
+
+  const payload = {}
+
+  if (url) {
+      payload['url'] = url
+      payload['is_reusable'] = true
+  }
+
+  if (attachment_id) {
+      payload['attachment_id'] = attachment_id
+  }
 
   const response = {
     "attachment":{
       "type":type,
-      "payload":{
-        "url": url,
-        "is_reusable": true
-      }
+      "payload": payload 
     }
   }
   return response
@@ -326,5 +334,6 @@ module.exports = {
   translatePictureChoice,
   translateDate,
   translateLegal,
+  translateAttachment,
   makeUrl,
 }
