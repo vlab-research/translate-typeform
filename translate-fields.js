@@ -5,7 +5,7 @@ const translateShortText = data => {
 //welcome_screen
 const translateWelcomeScreen = (data, ref) => {
   const text = data.properties.button_text
-  return makeMultipleChoice(data.title, [{label: text}], ref)
+  return makeMultipleChoice(data.title, [{ label: text }], ref)
 }
 
 const translateLongText = translateShortText
@@ -20,7 +20,7 @@ const translateStatement = data => {
 
 const translateThankYouScreen = data => {
   const title = data.title.split('\n')[0]
-  const response = translateShortText({title})
+  const response = translateShortText({ title })
   response.metadata = { type: 'thankyou_screen' }
   return response
 }
@@ -28,7 +28,7 @@ const translateThankYouScreen = data => {
 const makeMultipleChoice = (text, choices, ref) => {
 
   // let's try multiple elements??
-  const response = {text}
+  const response = { text }
   response.quick_replies = choices.map(choice => {
     const [title, value] = Array.isArray(choice) ? choice : [choice.label, choice.label]
     return {
@@ -74,7 +74,7 @@ const translateDropDown = translateMultipleChoice
 
 //yes_no to quick reply
 const translateYesNo = (data, ref) => {
-  return _makeSimpleChoice(data.title, [['Yes',true], ['No', false]], ref)
+  return _makeSimpleChoice(data.title, [['Yes', true], ['No', false]], ref)
 }
 
 const translateLegal = (data, ref) => {
@@ -107,8 +107,8 @@ const translateRatings = (data, ref) => {
   const steps = data.properties.steps
 
   const choices = new Array(steps)
-        .fill('*')
-        .map((e,i) => ({ label: `${i+start}`}))
+    .fill('*')
+    .map((e, i) => ({ label: `${i + start}` }))
 
   return makeMultipleChoice(data.title, choices, ref)
 
@@ -178,15 +178,15 @@ function _shareButton(shareText, buttonText, url) {
 }
 
 const translateShare = (data) => {
-  const {url, shareText, buttonText } = data.md
+  const { url, shareText, buttonText } = data.md
 
   const response = {
-    "attachment":{
-      "type":"template",
-      "payload":{
-        "template_type":"button",
+    "attachment": {
+      "type": "template",
+      "payload": {
+        "template_type": "button",
         "text": data.title,
-        "buttons": [ _shareButton(shareText, buttonText, url)]
+        "buttons": [_shareButton(shareText, buttonText, url)]
       }
     }
   }
@@ -219,7 +219,7 @@ const makeUrl = (url) => {
     return url
   }
 
-  const {base, protocol='https', params={}} = url
+  const { base, protocol = 'https', params = {} } = url
 
   if (!base) {
     throw new Error(`Invalid URL object for creating a URL: ${url}`)
@@ -235,14 +235,14 @@ const translateWebview = (data) => {
   const { url, buttonText, extensions } = data.md
 
   const response = {
-    "attachment":{
-      "type":"template",
-      "payload":{
-        "template_type":"button",
+    "attachment": {
+      "type": "template",
+      "payload": {
+        "template_type": "button",
         "text": data.title,
-        "buttons":[
+        "buttons": [
           {
-            "type":"web_url",
+            "type": "web_url",
             "url": makeUrl(url),
             "title": buttonText || "View website",
             "webview_height_ratio": "full",
@@ -264,18 +264,18 @@ const translateAttachment = (data) => {
   const payload = {}
 
   if (url) {
-      payload['url'] = url
-      payload['is_reusable'] = true
+    payload['url'] = url
+    payload['is_reusable'] = true
   }
 
   if (attachment_id) {
-      payload['attachment_id'] = attachment_id
+    payload['attachment_id'] = attachment_id
   }
 
   const response = {
-    "attachment":{
-      "type":type,
-      "payload": payload 
+    "attachment": {
+      "type": type,
+      "payload": payload
     }
   }
   return response
@@ -306,15 +306,21 @@ const lookup = {
   'attachment': translateAttachment
 }
 
+function formatResponse(response) {
+  const extraParams = response.metadata.sendParams || {}
+  response.metadata = JSON.stringify(response.metadata)
+  return { ...extraParams, message: response }
+}
+
 function translator(question) {
   const fn = lookup[question.type]
   if (!fn) {
     throw new TypeError(`There is no translator for the question of type ${question.type}`)
   }
   const response = fn(question, question.ref)
+  response.metadata = { ...response.metadata, ...question.md, ref: question.ref }
 
-  response.metadata = JSON.stringify({ ...response.metadata, ...question.md, ref: question.ref })
-  return response
+  return formatResponse(response)
 }
 
 module.exports = {

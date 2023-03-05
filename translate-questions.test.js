@@ -77,7 +77,7 @@ describe('yes_no questions', () => {
     return question.type === 'yes_no'
   })[0]
 
-  const translated = translateFunctions.translator(yesNoQuestion)
+  const { message: translated } = translateFunctions.translator(yesNoQuestion)
 
   it('should have a text property with the title of the questions', () => {
     translated.attachment.payload.should.have.property('text', yesNoQuestion.title)
@@ -101,7 +101,7 @@ describe('should translate multiple choice questions', () => {
     return question.type === 'multiple_choice'
   })[0]
 
-  const translated = translateFunctions.translator(multipleChoiceQuestion)
+  const { message: translated } = translateFunctions.translator(multipleChoiceQuestion)
 
   it('should have a text property with the title of the questions', () => {
     translated.should.have.property('text', multipleChoiceQuestion.title)
@@ -144,16 +144,18 @@ describe('should translate questions that use an opinion scale', () => {
 
   it('quick_replies payload property should return the score and ref', () => {
     for (let [index, el] of translated.quick_replies.entries()) {
-      JSON.parse(el.payload).value.should.equal('' + (index+1))
+      JSON.parse(el.payload).value.should.equal('' + (index + 1))
       JSON.parse(el.payload).ref.should.equal('foo')
-      el.title.should.equal('' + (index+1))
+      el.title.should.equal('' + (index + 1))
       el.content_type.should.equal('text')
     }
   })
 
   it('quick_replies payload property should listen to start_at_one', () => {
-    const translated = translateFunctions.translateOpinionScale({...opinionScaleQuestion,
-                                                                 properties: { steps: 5, start_at_one: false }})
+    const translated = translateFunctions.translateOpinionScale({
+      ...opinionScaleQuestion,
+      properties: { steps: 5, start_at_one: false }
+    })
 
     for (let [index, el] of translated.quick_replies.entries()) {
       JSON.parse(el.payload).value.should.equal('' + (index))
@@ -163,12 +165,14 @@ describe('should translate questions that use an opinion scale', () => {
   })
 
   it('quick_replies payload property should default to 1 if start_at_one is undefined (translateRating)', () => {
-    const translated = translateFunctions.translateRatings({...opinionScaleQuestion,
-                                                            properties: { steps: 5, start_at_one: undefined }})
+    const translated = translateFunctions.translateRatings({
+      ...opinionScaleQuestion,
+      properties: { steps: 5, start_at_one: undefined }
+    })
 
     for (let [index, el] of translated.quick_replies.entries()) {
-      JSON.parse(el.payload).value.should.equal('' + (index+1))
-      el.title.should.equal('' + (index+1))
+      JSON.parse(el.payload).value.should.equal('' + (index + 1))
+      el.title.should.equal('' + (index + 1))
       el.content_type.should.equal('text')
     }
   })
@@ -261,22 +265,22 @@ describe('should translate questions with choices accompanied by pictures', () =
 })
 
 describe('translateAttachment', () => {
-    const fn = translateFunctions.translateAttachment
+  const fn = translateFunctions.translateAttachment
 
-    it('works for url', () => {
-        const res = fn({md: {attachment: {type: 'image', url: 'foo'}}})
+  it('works for url', () => {
+    const res = fn({ md: { attachment: { type: 'image', url: 'foo' } } })
 
-        res.attachment.type.should.equal('image')
-        res.attachment.payload.url.should.equal('foo')
-    })
+    res.attachment.type.should.equal('image')
+    res.attachment.payload.url.should.equal('foo')
+  })
 
 
-    it('works for attachment_id', () => {
-        const res = fn({md: {attachment: {type: 'image', attachment_id: 'foo'}}})
+  it('works for attachment_id', () => {
+    const res = fn({ md: { attachment: { type: 'image', attachment_id: 'foo' } } })
 
-        res.attachment.type.should.equal('image')
-        res.attachment.payload.attachment_id.should.equal('foo')
-    })
+    res.attachment.type.should.equal('image')
+    res.attachment.payload.attachment_id.should.equal('foo')
+  })
 
 })
 
@@ -290,12 +294,29 @@ describe('makeUrl', () => {
   })
 
   it('makes a url without any query params', () => {
-    translateFunctions.makeUrl({base: 'foo.com/bar'}).should.equal('https://foo.com/bar')
+    translateFunctions.makeUrl({ base: 'foo.com/bar' }).should.equal('https://foo.com/bar')
   })
 
   it('makes a url with any query params', () => {
     translateFunctions
-      .makeUrl({base: 'foo.com/bar', params: {'baz': 'https://qux.com?fast=cars', 'id': 123}})
+      .makeUrl({ base: 'foo.com/bar', params: { 'baz': 'https://qux.com?fast=cars', 'id': 123 } })
       .should.equal('https://foo.com/bar?baz=https%3A%2F%2Fqux.com%3Ffast%3Dcars&id=123')
+  })
+})
+
+describe('translator', () => {
+  const { translator } = translateFunctions
+
+  it('adds sendParameters when declared in the question', () => {
+
+    const res = translator({
+      type: 'multiple_choice',
+      title: 'Do you want to continue?',
+      properties: { choices: [] },
+      md: { sendParams: { tag: 'TAG_ONE', messaging_type: 'MESSAGE_TAG' } }
+    })
+
+    res.tag.should.equal('TAG_ONE')
+    res.messaging_type.should.equal('MESSAGE_TAG')
   })
 })

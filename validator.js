@@ -1,4 +1,4 @@
-const {translator}= require('./translate-fields')
+const { translator } = require('./translate-fields')
 const emailValidator = require('email-validator')
 const phone = require('phone')
 // allow for custom error messages from metadata!
@@ -18,12 +18,14 @@ function _validateMC(r, titles, messages) {
   // Messenger will return us numbers in JSON,
   // but typeform mostly uses strings, except for booleans.
   // So we cast everything to strings, to compare with QR's
-  return { message: messages['label.error.mustSelect'],
-           valid: titles.map(t => ''+t ).indexOf(''+r) !== -1 }
+  return {
+    message: messages['label.error.mustSelect'],
+    valid: titles.map(t => '' + t).indexOf('' + r) !== -1
+  }
 }
 
 function validateQR(field, messages) {
-  const q = translator(field)
+  const { message: q } = translator(field)
   const titles = q.quick_replies.map(r => r.title)
 
   return r => _validateMC(r, titles, messages)
@@ -31,10 +33,10 @@ function validateQR(field, messages) {
 
 
 function validateButton(field, messages) {
-  const q = translator(field)
+  const { message: q } = translator(field)
 
   const titles = q.attachment.payload.buttons
-        .map(r => JSON.parse(r.payload).value)
+    .map(r => JSON.parse(r.payload).value)
 
   return r => _validateMC(r.value, titles, messages)
 }
@@ -47,14 +49,16 @@ function alwaysTrue(field, messages) {
 }
 
 function validateString(field, messages) {
-  return r => ({ message: messages['label.error.mustEnter'],
-                 valid: typeof r === 'string' })
+  return r => ({
+    message: messages['label.error.mustEnter'],
+    valid: typeof r === 'string'
+  })
 }
 
 function validateStatement(field, messages) {
 
   // this could be made more generic, but enough for now.
-  const {responseMessage} = field.md ? field.md : {}
+  const { responseMessage } = field.md ? field.md : {}
   return __ => ({ message: responseMessage || 'No response is necessary.', valid: false })
 }
 
@@ -63,7 +67,7 @@ function _isNumber(num) {
     num = num.replace(/,/g, '')
     num = num.replace(/\./g, '')
     num = num.trim()
-    return !!num && num*0 === 0
+    return !!num && num * 0 === 0
   }
 
   if (typeof num == "boolean") {
@@ -75,8 +79,10 @@ function _isNumber(num) {
 }
 
 function validateNumber(field, messages) {
-  return r => ({ message: messages['label.error.range'],
-                 valid: _isNumber(r) })
+  return r => ({
+    message: messages['label.error.range'],
+    valid: _isNumber(r)
+  })
 }
 
 function _isEmail(mail) {
@@ -84,26 +90,30 @@ function _isEmail(mail) {
 }
 
 function validateEmail(field, messages) {
-  return r => ({ message: messages['label.error.emailAddress'],
-                 valid: _isEmail(r) })
+  return r => ({
+    message: messages['label.error.emailAddress'],
+    valid: _isEmail(r)
+  })
 }
 
 function _isPhone(number, country, mobile) {
-  return !!phone(''+number, country, !mobile)[0]
+  return !!phone('' + number, country, !mobile)[0]
 }
 
 function validatePhone(field, messages) {
-  const q = translator(field)
+  const { message: q } = translator(field)
   const md = JSON.parse(q.metadata)
   const country = md.validate && md.validate.country
   const mobile = md.validate && md.validate.mobile
 
-  return r => ({ message: messages['label.error.phoneNumber'],
-                 valid: _isPhone(r, country || '', mobile) })
+  return r => ({
+    message: messages['label.error.phoneNumber'],
+    valid: _isPhone(r, country || '', mobile)
+  })
 }
 
 function validateNotify(field, messages) {
-  const q = translator(field)
+  const { message: q } = translator(field)
   const md = JSON.parse(q.metadata)
 
   return r => {
@@ -135,7 +145,7 @@ const lookup = {
 
 
 function _validationMessages(messages = {}) {
-  return {...defaultMessages, ...messages}
+  return { ...defaultMessages, ...messages }
 }
 
 function offMessage(messages = {}) {
