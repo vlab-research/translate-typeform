@@ -13,7 +13,7 @@ const mdLinkPattern = new RegExp(/\[([^\]]*)\]\(([^\)]+)\)/)
 
 function removeMdLinks(s) {
   if (typeof s === 'string' || s instanceof String) {
-    return s.replace(mdLinkPattern, "$1")
+    return s.replace(mdLinkPattern, "$2")
   }
   return s
 }

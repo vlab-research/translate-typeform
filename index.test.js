@@ -84,6 +84,19 @@ describe('addCustomType', () => {
     res.md.baz.should.equal(1)
   })
 
+  it('removes markdown urls in reallife scenario', () => {
+    const description = "{\n \"type\": \"webview\",\n \"url\": {\n \"base\": \"[https://columbiangwu.co1.qualtrics.com/jfe/form/SV\\_8k7acmuWQAZjERE](https://columbiangwu.co1.qualtrics.com/jfe/form/SV_8k7acmuWQAZjERE)\",\n \"params\": {\n \"vlab\\_id\": \"{{hidden:id}}\"\n }\n },\n \"buttonText\": \"Start\",\n \"extensions\": false\n}"
+
+    const field = _field({
+      type: 'statement',
+      properties: { description }
+    })
+
+
+    const res = t.addCustomType(field)
+    res.md.url.base.should.equal("https://columbiangwu.co1.qualtrics.com/jfe/form/SV_8k7acmuWQAZjERE")
+  })
+
 
   it('allows brackets and paranthesis though', () => {
     const field = _field({
