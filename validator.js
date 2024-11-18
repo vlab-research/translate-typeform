@@ -124,6 +124,24 @@ function validateNotify(field, messages) {
 }
 
 
+function validateUpload(field, messages) {
+  const { message: q } = translator(field)
+  const md = JSON.parse(q.metadata)
+
+  const uploadType = md.upload && md.upload.type
+
+  return r => {
+    const url = r && r.payload && r.payload.url
+    const validType = (r && r.type) === uploadType
+    const valid = validType && !!url
+    const message = messages['label.error.mustEnter']
+    return { message, valid }
+  }
+}
+
+
+// upload
+
 const lookup = {
   number: validateNumber,
   statement: validateStatement,
@@ -140,7 +158,8 @@ const lookup = {
   wait: validateStatement,
   notify: validateNotify,
   email: validateEmail,
-  phone_number: validatePhone
+  phone_number: validatePhone,
+  upload: validateUpload,
 }
 
 

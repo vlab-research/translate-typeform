@@ -194,9 +194,9 @@ const translateShare = (data) => {
   return response
 }
 
-
 const translateWait = translateShortText
 const translateStitch = translateShortText
+const translateUpload = translateShortText
 
 const translateNotify = (data, ref) => {
 
@@ -283,6 +283,7 @@ const translateAttachment = (data) => {
 
 
 
+
 const lookup = {
   'short_text': translateShortText,
   'multiple_choice': translateMultipleChoice,
@@ -303,7 +304,8 @@ const lookup = {
   'wait': translateWait,
   'stitch': translateStitch,
   'notify': translateNotify,
-  'attachment': translateAttachment
+  'attachment': translateAttachment,
+  'upload': translateUpload,
 }
 
 function formatResponse(response) {
@@ -341,5 +343,6 @@ module.exports = {
   translateDate,
   translateLegal,
   translateAttachment,
+  translateUpload,
   makeUrl,
 }
