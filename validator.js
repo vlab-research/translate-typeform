@@ -11,6 +11,7 @@ const defaultMessages = {
   'label.error.range': 'Sorry, please enter a valid number.',
   'label.buttonHint.default': "Hello, we just wanted to send a friendly follow up. If you would like to stop the survey, just ignore this message and we won't bother you again.",
   'label.error.mustAccept': "We're sorry, but this survey is now over and closed.",
+  'block.shortText.placeholder': "Sorry, I can't accept any responses now.",
 }
 
 function _validateMC(r, titles, messages) {
@@ -59,7 +60,7 @@ function validateStatement(field, messages) {
 
   // this could be made more generic, but enough for now.
   const { responseMessage } = field.md ? field.md : {}
-  return __ => ({ message: responseMessage || 'No response is necessary.', valid: false })
+  return __ => ({ message: responseMessage || messages['block.shortText.placeholder'] , valid: false })
 }
 
 function _isNumber(num) {
