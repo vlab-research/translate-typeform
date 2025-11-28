@@ -80,18 +80,18 @@ describe('yes_no questions', () => {
   const { message: translated } = translateFunctions.translator(yesNoQuestion)
 
   it('should have a text property with the title of the questions', () => {
-    translated.attachment.payload.should.have.property('text', yesNoQuestion.title)
+    translated.should.have.property('text', yesNoQuestion.title)
   })
 
-  it('The options given by buttons should be a "yes" and "no"', () => {
-    translated.attachment.payload.buttons[0].title.should.equal('Yes')
-    translated.attachment.payload.buttons[1].title.should.equal('No')
+  it('The options given by quick_replies should be a "yes" and "no"', () => {
+    translated.quick_replies[0].title.should.equal('Yes')
+    translated.quick_replies[1].title.should.equal('No')
   })
 
-  it('The payload given by buttons should be a true/false and contain ref', () => {
-    JSON.parse(translated.attachment.payload.buttons[0].payload).value.should.equal(true)
-    JSON.parse(translated.attachment.payload.buttons[1].payload).value.should.equal(false)
-    JSON.parse(translated.attachment.payload.buttons[0].payload).ref.should.equal(yesNoQuestion.ref)
+  it('The payload given by quick_replies should be a true/false and contain ref', () => {
+    JSON.parse(translated.quick_replies[0].payload).value.should.equal(true)
+    JSON.parse(translated.quick_replies[1].payload).value.should.equal(false)
+    JSON.parse(translated.quick_replies[0].payload).ref.should.equal(yesNoQuestion.ref)
   })
 })
 

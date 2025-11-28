@@ -74,11 +74,11 @@ const translateDropDown = translateMultipleChoice
 
 //yes_no to quick reply
 const translateYesNo = (data, ref) => {
-  return _makeSimpleChoice(data.title, [['Yes', true], ['No', false]], ref)
+  return makeMultipleChoice(data.title, [['Yes', true], ['No', false]], ref)
 }
 
 const translateLegal = (data, ref) => {
-  return _makeSimpleChoice(data.title, [["I Accept", true], ["I don't Accept", false]], ref)
+  return makeMultipleChoice(data.title, [["I Accept", true], ["I don't Accept", false]], ref)
 }
 
 //email to quick reply (fb has qr button for sending email assoc with account)
