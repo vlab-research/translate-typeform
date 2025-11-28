@@ -320,7 +320,8 @@ function translator(question) {
     throw new TypeError(`There is no translator for the question of type ${question.type}`)
   }
   const response = fn(question, question.ref)
-  response.metadata = { ...response.metadata, ...question.md, ref: question.ref }
+  // Include type in metadata for all field types to match Rust machine behavior
+  response.metadata = { ...response.metadata, ...question.md, ref: question.ref, type: question.type }
 
   return formatResponse(response)
 }
