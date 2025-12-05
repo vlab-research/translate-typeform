@@ -129,193 +129,67 @@ function normalizeUnicodeNumerals(value) {
   return normalized
 }
 
+function getLocaleSeparators(locale = 'en-US') {
+  const parts = new Intl.NumberFormat(locale).formatToParts(1234.5)
+  const decimal = parts.find(p => p.type === 'decimal')?.value || '.'
+  const group = parts.find(p => p.type === 'group')?.value || ','
+  return { decimal, group }
+}
 
-function _isNumber(num) {
-  // Type checking - reject booleans explicitly
-  if (typeof num === 'boolean') {
-    return false
+function parseNumber(str, locale = 'en-US') {
+  if (typeof str === 'number') return str
+  if (typeof str === 'boolean') return null
+  if (typeof str !== 'string') return null
+
+  let value = str.trim()
+
+  const { decimal, group } = getLocaleSeparators(locale)
+
+  // 1. Remove thousands separator in original form (catches Unicode separators)
+  if (group) {
+    value = value.split(group).join('')
   }
 
-  // Non-string types (actual numbers) pass through
-  if (typeof num !== 'string') {
-    return true
+  // 2. Remove spaces (thousands separator in some locales like fr-FR, ar-MA)
+  value = value.replace(/\s/g, '')
+
+  // 3. Normalize unicode (digits + Arabic separators → ASCII)
+  value = normalizeUnicodeNumerals(value)
+
+  // 4. After normalization, also remove the ASCII equivalent of thousands separator
+  //    (handles case where user types Arabic digits with ASCII punctuation)
+  const normalizedGroup = normalizeUnicodeNumerals(group)
+  const normalizedDecimal = normalizeUnicodeNumerals(decimal)
+
+  if (normalizedGroup && normalizedGroup !== normalizedDecimal) {
+    value = value.split(normalizedGroup).join('')
   }
 
-  // Reject mixed script numerals (e.g., "१२3" mixing Devanagari and ASCII)
-  // This is not a realistic use case and indicates data corruption
-  const digitMatches = Array.from(num.matchAll(/\p{Nd}/gu))
-  if (digitMatches.length > 0) {
-    // Helper function to identify script of a digit
-    function getDigitScript(char) {
-      const code = char.charCodeAt(0)
-      if (code >= 0x0030 && code <= 0x0039) return 'ascii'
-      if (code >= 0x0660 && code <= 0x0669) return 'arabic-indic'
-      if (code >= 0x06F0 && code <= 0x06F9) return 'persian'
-      if (code >= 0x0966 && code <= 0x096F) return 'devanagari'
-      if (code >= 0x09E6 && code <= 0x09EF) return 'bengali'
-      if (code >= 0x0BE6 && code <= 0x0BEF) return 'tamil'
-      if (code >= 0x0E50 && code <= 0x0E59) return 'thai'
-      return 'other'
-    }
-
-    // Check if all digits are from the same script
-    const firstScript = getDigitScript(digitMatches[0][0])
-    const allSameScript = digitMatches.every(match => getDigitScript(match[0]) === firstScript)
-
-    if (!allSameScript) {
-      return false // Reject mixed scripts
-    }
+  // 5. Replace decimal separator with dot
+  if (normalizedDecimal && normalizedDecimal !== '.') {
+    value = value.replace(normalizedDecimal, '.')
   }
 
-  // Normalize unicode numerals to latin numerals
-  let normalized = normalizeUnicodeNumerals(num).trim()
-
-  // Remove spaces (used as thousands separators in some locales)
-  normalized = normalized.replace(/\s+/g, '')
-
-  // Reject scientific notation (not valid form input)
-  if (/[eE]/.test(normalized)) {
-    return false
+  // 6. Validate: reject malformed input (multiple dots, letters, etc.)
+  if (!/^[+-]?\d*\.?\d+$/.test(value) && !/^[+-]?\d+\.?$/.test(value)) {
+    return null
   }
 
-  // Early validation: check that string only contains digits, +/-, and separators (. or ,)
-  // This prevents "123abc" or "8888mil" from being accepted
-  if (!/^[+-]?[\d.,]+$/.test(normalized)) {
-    return false
-  }
+  const result = parseFloat(value)
+  return isFinite(result) ? result : null
+}
 
-  // Intelligently handle separators to preserve decimal values
-  // CRITICAL FIX: Don't blindly remove all dots/commas - distinguish between
-  // decimal separators (preserve) and thousands separators (remove)
-  const dotCount = (normalized.match(/\./g) || []).length
-  const commaCount = (normalized.match(/,/g) || []).length
-
-  if (dotCount + commaCount === 0) {
-    // No separators - simple integer case
-    const parsed = parseFloat(normalized)
-    return !isNaN(parsed) && isFinite(parsed)
-  }
-
-  // Determine which separators are decimal vs thousands
-  // Heuristic: If both types present, the one that appears last is the decimal separator
-  if (dotCount > 0 && commaCount > 0) {
-    // Both present - last one is decimal
-    const lastDot = normalized.lastIndexOf('.')
-    const lastComma = normalized.lastIndexOf(',')
-
-    if (lastDot > lastComma) {
-      // US-style format: 1,234.56 (commas are thousands, dot is decimal)
-      normalized = normalized.replace(/,/g, '')
-    } else {
-      // European-style format: 1.234,56 (dots are thousands, comma is decimal)
-      normalized = normalized.replace(/\./g, '').replace(',', '.')
-    }
-  } else if (dotCount === 1) {
-    // Single dot - it's the decimal separator, keep it
-    // (no change needed)
-  } else if (commaCount === 1) {
-    // Single comma - it's the decimal separator, normalize to dot
-    normalized = normalized.replace(',', '.')
-  } else if (dotCount > 1) {
-    // Multiple dots - validate pattern to avoid accepting malformed input like "1.2.3"
-    const lastDot = normalized.lastIndexOf('.')
-    const afterDot = normalized.substring(lastDot + 1)
-    const beforeDot = normalized.substring(0, lastDot)
-
-    // Check if this looks like a valid thousands separator pattern
-    // Valid: last separator followed by 1-3 digits (decimal), earlier ones separate groups
-    if (afterDot.length > 0 && afterDot.length <= 3 && /^\d+$/.test(afterDot)) {
-      // Check that the part before last dot has valid thousands separator positioning
-      const beforeCleaned = beforeDot.replace(/\./g, '')
-      const dotsBeforeLastDot = dotCount - 1
-
-      // Validate: need at least 4 digits AND check that separator pattern makes sense
-      // For ambiguous patterns like "100.50.25", check if middle groups are too short
-      if (beforeCleaned.length >= 4 && dotsBeforeLastDot === 1) {
-        // Exactly ONE thousands separator - validate the split makes sense
-        // Split beforeDot by dots to get groups
-        const groups = beforeDot.split('.')
-        // For standard thousands, groups should be 3 digits (except first can be 1-3)
-        // If we see groups of 1-2 digits in middle positions, it's suspicious
-        const allGroupsValid = groups.every((g, idx) => {
-          if (idx === 0) return g.length >= 1 && g.length <= 3  // First group: 1-3 digits OK
-          return g.length === 3  // Other groups: must be exactly 3
-        })
-
-        if (allGroupsValid) {
-          normalized = beforeCleaned + '.' + afterDot
-        } else {
-          // Pattern like "100.50.25" with non-standard grouping
-          return false
-        }
-      } else if (beforeCleaned.length >= 7 && dotsBeforeLastDot >= 2) {
-        // Multiple thousands separators - only valid if enough digits
-        // Don't do detailed validation, just ensure enough total digits
-        normalized = beforeCleaned + '.' + afterDot
-      } else {
-        // Not enough digits OR ambiguous pattern - reject
-        return false
-      }
-    } else {
-      // All are thousands separators (no decimal)
-      normalized = normalized.replace(/\./g, '')
-    }
-  } else if (commaCount > 1) {
-    // Multiple commas - validate pattern similarly
-    const lastComma = normalized.lastIndexOf(',')
-    const afterComma = normalized.substring(lastComma + 1)
-    const beforeComma = normalized.substring(0, lastComma)
-
-    if (afterComma.length > 0 && afterComma.length <= 3 && /^\d+$/.test(afterComma)) {
-      const beforeCleaned = beforeComma.replace(/,/g, '')
-      const commasBeforeLastComma = commaCount - 1
-
-      // Check if this looks like Indian numbering (all thousands) vs decimal
-      // Indian: "1,00,000" → groups of 3, 2, 2 (or similar patterns)
-      // Decimal: "1,234.56" → last group is 1-2 digits (decimal)
-      const allGroups = normalized.split(',')
-      const hasDecimalPattern = afterComma.length <= 2  // Decimals typically 1-2 digits
-      const hasThousandsPattern = afterComma.length === 3 && commaCount >= 2  // Indian lakh/crore
-
-      if (hasThousandsPattern) {
-        // Likely Indian numbering - treat all as thousands separators
-        normalized = normalized.replace(/,/g, '')
-      } else if (beforeCleaned.length >= 4 && commasBeforeLastComma === 1) {
-        // One thousands separator before decimal
-        const groups = beforeComma.split(',')
-        const allGroupsValid = groups.every((g, idx) => {
-          if (idx === 0) return g.length >= 1 && g.length <= 3
-          return g.length === 3 || g.length === 2
-        })
-
-        if (allGroupsValid) {
-          normalized = beforeCleaned + '.' + afterComma
-        } else {
-          return false
-        }
-      } else if (beforeCleaned.length >= 7 && commasBeforeLastComma >= 2) {
-        // Multiple thousands separators with enough digits
-        normalized = beforeCleaned + '.' + afterComma
-      } else {
-        // Malformed pattern like "1,2,3" → reject
-        return false
-      }
-    } else {
-      // All are thousands separators (no decimal)
-      normalized = normalized.replace(/,/g, '')
-    }
-  }
-
-  // Final validation using parseFloat
-  // This properly handles decimal values unlike the old approach
-  const parsed = parseFloat(normalized)
-  return !isNaN(parsed) && isFinite(parsed)
+function _isNumber(num, locale) {
+  return parseNumber(num, locale) !== null
 }
 
 function validateNumber(field, messages) {
+  const { message: q } = translator(field)
+  const md = JSON.parse(q.metadata)
+  const locale = md.locale || 'en-US'
   return r => ({
     message: messages['label.error.range'],
-    valid: _isNumber(r)
+    valid: _isNumber(r, locale)
   })
 }
 
@@ -428,4 +302,4 @@ function validator(field, messages = {}) {
 }
 
 
-module.exports = { validator, defaultMessage, followUpMessage, offMessage, normalizeUnicodeNumerals }
+module.exports = { validator, defaultMessage, followUpMessage, offMessage, normalizeUnicodeNumerals, parseNumber }

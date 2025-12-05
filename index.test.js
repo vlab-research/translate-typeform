@@ -117,4 +117,15 @@ describe('addCustomType', () => {
 
     res.md.url.should.equal("https://gbvlinks.nandan.cloud?url=populationfoundation.in&id=")
   })
+
+  it('parses locale from YAML for number fields', () => {
+    const field = _field({
+      type: 'number',
+      properties: { description: 'locale: de-DE' }
+    })
+
+    const res = t.addCustomType(field)
+
+    res.md.locale.should.equal('de-DE')
+  })
 })
