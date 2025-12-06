@@ -29,7 +29,11 @@ function validateQR(field, messages) {
   const { message: q } = translator(field)
   const titles = q.quick_replies.map(r => r.title)
 
-  return r => _validateMC(r, titles, messages)
+  return r => {
+    // Handle both postback format ({value: 'Yes'}) and direct value format ('Yes')
+    const val = r && r.value !== undefined ? r.value : r
+    return _validateMC(val, titles, messages)
+  }
 }
 
 
