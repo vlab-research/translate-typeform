@@ -218,4 +218,62 @@ describe('validator', () => {
     // ASCII with ar-SA also works (Arabic separators normalize to US-style)
     v.validator(field)('1,234.56').valid.should.equal(true)
   })
+
+  describe('validateLegalYesNo', () => {
+    // legal field - new QR format with string values
+    it('validates legal field with string response (new QR format)', () => {
+      const field = { type: 'legal', title: 'Do you accept?', ref: 'foo' }
+      v.validator(field)('I Accept').valid.should.equal(true)
+      v.validator(field)("I don't Accept").valid.should.equal(true)
+      v.validator(field)('Invalid').valid.should.equal(false)
+    })
+
+    // legal field - old postback format with boolean values
+    it('validates legal field with boolean response (old postback format)', () => {
+      const field = { type: 'legal', title: 'Do you accept?', ref: 'foo' }
+      v.validator(field)(true).valid.should.equal(true)   // maps to first option 'I Accept'
+      v.validator(field)(false).valid.should.equal(true)  // maps to second option "I don't Accept"
+    })
+
+    // legal field - full postback payload object
+    it('validates legal field with postback payload object', () => {
+      const field = { type: 'legal', title: 'Do you accept?', ref: 'foo' }
+      // Old postback sends full payload object with boolean value
+      v.validator(field)({ value: true, ref: 'foo' }).valid.should.equal(true)
+      v.validator(field)({ value: false, ref: 'foo' }).valid.should.equal(true)
+      // New QR sends full payload object with string value
+      v.validator(field)({ value: 'I Accept', ref: 'foo' }).valid.should.equal(true)
+    })
+
+    // yes_no field - new QR format with string values
+    it('validates yes_no field with string response (new QR format)', () => {
+      const field = { type: 'yes_no', title: 'Is this correct?', ref: 'bar' }
+      v.validator(field)('Yes').valid.should.equal(true)
+      v.validator(field)('No').valid.should.equal(true)
+      v.validator(field)('Maybe').valid.should.equal(false)
+    })
+
+    // yes_no field - old postback format with boolean values
+    it('validates yes_no field with boolean response (old postback format)', () => {
+      const field = { type: 'yes_no', title: 'Is this correct?', ref: 'bar' }
+      v.validator(field)(true).valid.should.equal(true)   // maps to first option 'Yes'
+      v.validator(field)(false).valid.should.equal(true)  // maps to second option 'No'
+    })
+
+    // yes_no field - full postback payload object
+    it('validates yes_no field with postback payload object', () => {
+      const field = { type: 'yes_no', title: 'Is this correct?', ref: 'bar' }
+      v.validator(field)({ value: true, ref: 'bar' }).valid.should.equal(true)
+      v.validator(field)({ value: false, ref: 'bar' }).valid.should.equal(true)
+      v.validator(field)({ value: 'Yes', ref: 'bar' }).valid.should.equal(true)
+    })
+
+    // error message check
+    it('returns correct error message for invalid response', () => {
+      const field = { type: 'legal', title: 'Do you accept?', ref: 'foo' }
+      const res = v.validator(field)('Invalid')
+      res.valid.should.equal(false)
+      res.message.should.equal('Sorry, please use the buttons provided to answer the question.')
+    })
+  })
 })

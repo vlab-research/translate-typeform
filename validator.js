@@ -32,6 +32,29 @@ function validateQR(field, messages) {
   return r => _validateMC(r, titles, messages)
 }
 
+// Validator for legal and yes_no fields that handles both:
+// - New QR responses (string values like 'I Accept')
+// - Old postback responses (boolean values like true/false) for backward compatibility
+function validateLegalYesNo(field, messages) {
+  const { message: q } = translator(field)
+  const payloadValues = q.quick_replies.map(r => JSON.parse(r.payload).value)
+
+  return r => {
+    // Extract value from object if it's a postback payload
+    let responseValue = (r && typeof r === 'object' && r.value !== undefined) ? r.value : r
+
+    // Backward compatibility: map old boolean postback values to new string values
+    // Old format used true for first option, false for second
+    if (responseValue === true) {
+      responseValue = payloadValues[0]
+    } else if (responseValue === false) {
+      responseValue = payloadValues[1]
+    }
+
+    return _validateMC(responseValue, payloadValues, messages)
+  }
+}
+
 
 function alwaysTrue(field, messages) {
 
@@ -249,8 +272,8 @@ const lookup = {
   multiple_choice: validateQR,
   rating: validateQR,
   opinion_scale: validateQR,
-  legal: validateQR,
-  yes_no: validateQR,
+  legal: validateLegalYesNo,
+  yes_no: validateLegalYesNo,
   short_text: validateString,
   long_text: validateString,
   share: validateStatement,
