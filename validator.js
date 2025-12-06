@@ -131,8 +131,10 @@ function normalizeUnicodeNumerals(value) {
 
 function getLocaleSeparators(locale = 'en-US') {
   const parts = new Intl.NumberFormat(locale).formatToParts(1234.5)
-  const decimal = parts.find(p => p.type === 'decimal')?.value || '.'
-  const group = parts.find(p => p.type === 'group')?.value || ','
+  const decimalPart = parts.find(p => p.type === 'decimal')
+  const groupPart = parts.find(p => p.type === 'group')
+  const decimal = (decimalPart && decimalPart.value) || '.'
+  const group = (groupPart && groupPart.value) || ','
   return { decimal, group }
 }
 
