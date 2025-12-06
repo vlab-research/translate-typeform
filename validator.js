@@ -33,16 +33,6 @@ function validateQR(field, messages) {
 }
 
 
-function validateButton(field, messages) {
-  const { message: q } = translator(field)
-
-  const titles = q.attachment.payload.buttons
-    .map(r => JSON.parse(r.payload).value)
-
-  return r => _validateMC(r.value, titles, messages)
-}
-
-
 function alwaysTrue(field, messages) {
 
   // should not need a message, it's always valid!

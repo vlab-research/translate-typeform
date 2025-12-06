@@ -88,9 +88,9 @@ describe('yes_no questions', () => {
     translated.quick_replies[1].title.should.equal('No')
   })
 
-  it('The payload given by quick_replies should be a true/false and contain ref', () => {
-    JSON.parse(translated.quick_replies[0].payload).value.should.equal(true)
-    JSON.parse(translated.quick_replies[1].payload).value.should.equal(false)
+  it('The payload given by quick_replies should contain value and ref', () => {
+    JSON.parse(translated.quick_replies[0].payload).value.should.equal('Yes')
+    JSON.parse(translated.quick_replies[1].payload).value.should.equal('No')
     JSON.parse(translated.quick_replies[0].payload).ref.should.equal(yesNoQuestion.ref)
   })
 })
