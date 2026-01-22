@@ -125,6 +125,102 @@ describe('should translate multiple choice questions', () => {
   })
 })
 
+describe('should translate button_choice questions', () => {
+  // button_choice uses button template with postback instead of quick_replies
+  // Limited to 3 buttons per Facebook API constraints
+  const buttonChoiceQuestion = {
+    id: 'test-button-choice',
+    title: 'Pick your favorite',
+    ref: 'button-choice-ref',
+    type: 'button_choice',
+    properties: {
+      choices: [
+        { id: '1', ref: 'a', label: 'Option A' },
+        { id: '2', ref: 'b', label: 'Option B' },
+        { id: '3', ref: 'c', label: 'Option C' }
+      ]
+    }
+  }
+
+  const { message: translated } = translateFunctions.translator(buttonChoiceQuestion)
+
+  it('should have an attachment property', () => {
+    translated.should.have.property('attachment')
+  })
+
+  it('attachment should have type template', () => {
+    translated.attachment.should.have.property('type', 'template')
+  })
+
+  it('payload should have template_type button', () => {
+    translated.attachment.payload.should.have.property('template_type', 'button')
+  })
+
+  it('payload should have text with the question title', () => {
+    translated.attachment.payload.should.have.property('text', buttonChoiceQuestion.title)
+  })
+
+  it('buttons should be an array with 3 elements', () => {
+    translated.attachment.payload.buttons.should.be.an('array')
+    translated.attachment.payload.buttons.should.have.length(3)
+  })
+
+  it('each button should have type postback', () => {
+    translated.attachment.payload.buttons.forEach(button => {
+      button.should.have.property('type', 'postback')
+    })
+  })
+
+  it('buttons should have proper titles and payloads', () => {
+    const buttons = translated.attachment.payload.buttons
+    buttons[0].title.should.equal('Option A')
+    buttons[1].title.should.equal('Option B')
+    buttons[2].title.should.equal('Option C')
+
+    JSON.parse(buttons[0].payload).value.should.equal('Option A')
+    JSON.parse(buttons[0].payload).ref.should.equal('button-choice-ref')
+    JSON.parse(buttons[1].payload).value.should.equal('Option B')
+    JSON.parse(buttons[2].payload).value.should.equal('Option C')
+  })
+
+  it('should throw RangeError when more than 3 choices provided', () => {
+    const tooManyChoices = {
+      id: 'test',
+      title: 'Too many options',
+      ref: 'too-many-ref',
+      type: 'button_choice',
+      properties: {
+        choices: [
+          { id: '1', ref: 'a', label: 'A' },
+          { id: '2', ref: 'b', label: 'B' },
+          { id: '3', ref: 'c', label: 'C' },
+          { id: '4', ref: 'd', label: 'D' }
+        ]
+      }
+    }
+
+    translateFunctions.translator.bind(null, tooManyChoices).should.throw(RangeError)
+  })
+
+  it('should work with 1 or 2 choices', () => {
+    const twoChoices = {
+      id: 'test',
+      title: 'Two options',
+      ref: 'two-ref',
+      type: 'button_choice',
+      properties: {
+        choices: [
+          { id: '1', ref: 'a', label: 'Yes' },
+          { id: '2', ref: 'b', label: 'No' }
+        ]
+      }
+    }
+
+    const { message } = translateFunctions.translator(twoChoices)
+    message.attachment.payload.buttons.should.have.length(2)
+  })
+})
+
 describe('should translate questions that use an opinion scale', () => {
   const opinionScaleQuestion = mocks.fields.filter(question => {
     return question.type === 'opinion_scale'

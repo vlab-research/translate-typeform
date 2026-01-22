@@ -72,6 +72,24 @@ const translateMultipleChoice = (data, ref) => {
 
 const translateDropDown = translateMultipleChoice
 
+// Button choice - like multiple_choice but uses button template with postback
+// Limited to 3 buttons per Facebook API constraints
+const MAX_BUTTON_CHOICES = 3
+
+const translateButtonChoice = (data, ref) => {
+  const choices = data.properties.choices
+
+  if (choices.length > MAX_BUTTON_CHOICES) {
+    throw new RangeError(
+      `button_choice supports a maximum of ${MAX_BUTTON_CHOICES} buttons, ` +
+      `but ${choices.length} were provided in field "${data.ref}". ` +
+      `Use multiple_choice for more options.`
+    )
+  }
+
+  return _makeSimpleChoice(data.title, choices, ref)
+}
+
 //yes_no to quick reply
 const translateYesNo = (data, ref) => {
   return makeMultipleChoice(data.title, [{label: 'Yes'}, {label: 'No'}], ref)
@@ -287,6 +305,7 @@ const translateAttachment = (data) => {
 const lookup = {
   'short_text': translateShortText,
   'multiple_choice': translateMultipleChoice,
+  'button_choice': translateButtonChoice,
   'email': translateEmail,
   'phone_number': translatePhone,
   'picture_choice': translatePictureChoice,
@@ -336,6 +355,7 @@ module.exports = {
   translateStatement,
   translateYesNo,
   translateMultipleChoice,
+  translateButtonChoice,
   translateDropDown,
   translateEmail,
   translateOpinionScale,

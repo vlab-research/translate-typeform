@@ -276,4 +276,46 @@ describe('validator', () => {
       res.message.should.equal('Sorry, please use the buttons provided to answer the question.')
     })
   })
+
+  describe('validateButtonChoice', () => {
+    const field = {
+      type: 'button_choice',
+      title: 'Pick an option',
+      ref: 'button-ref',
+      properties: {
+        choices: [
+          { id: '1', ref: 'a', label: 'Option A' },
+          { id: '2', ref: 'b', label: 'Option B' },
+          { id: '3', ref: 'c', label: 'Option C' }
+        ]
+      }
+    }
+
+    it('validates string response matching button label', () => {
+      v.validator(field)('Option A').valid.should.equal(true)
+      v.validator(field)('Option B').valid.should.equal(true)
+      v.validator(field)('Option C').valid.should.equal(true)
+    })
+
+    it('invalidates string response not matching any button', () => {
+      v.validator(field)('Option D').valid.should.equal(false)
+      v.validator(field)('Invalid').valid.should.equal(false)
+    })
+
+    it('validates postback payload object with value property', () => {
+      // Postback sends payload object with {value, ref}
+      v.validator(field)({ value: 'Option A', ref: 'button-ref' }).valid.should.equal(true)
+      v.validator(field)({ value: 'Option B', ref: 'button-ref' }).valid.should.equal(true)
+    })
+
+    it('invalidates postback payload with invalid value', () => {
+      v.validator(field)({ value: 'Invalid', ref: 'button-ref' }).valid.should.equal(false)
+    })
+
+    it('returns correct error message for invalid response', () => {
+      const res = v.validator(field)('Invalid')
+      res.valid.should.equal(false)
+      res.message.should.equal('Sorry, please use the buttons provided to answer the question.')
+    })
+  })
 })

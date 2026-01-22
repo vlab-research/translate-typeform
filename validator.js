@@ -55,6 +55,20 @@ function validateLegalYesNo(field, messages) {
   }
 }
 
+// Validator for button_choice - postback buttons in a button template
+// Postback responses come as objects with {value, ref} properties
+function validateButtonChoice(field, messages) {
+  const { message: q } = translator(field)
+  const buttons = q.attachment.payload.buttons
+  const payloadValues = buttons.map(b => JSON.parse(b.payload).value)
+
+  return r => {
+    // Extract value from object if it's a postback payload
+    const responseValue = (r && typeof r === 'object' && r.value !== undefined) ? r.value : r
+    return _validateMC(responseValue, payloadValues, messages)
+  }
+}
+
 
 function alwaysTrue(field, messages) {
 
@@ -270,6 +284,7 @@ const lookup = {
   statement: validateStatement,
   thankyou_screen: validateStatement,
   multiple_choice: validateQR,
+  button_choice: validateButtonChoice,
   rating: validateQR,
   opinion_scale: validateQR,
   legal: validateLegalYesNo,
