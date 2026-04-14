@@ -232,6 +232,26 @@ const translateNotify = (data, ref) => {
   return response
 }
 
+const translateNotificationMessages = (data, ref) => {
+  const timezone = (data.md && data.md.timezone) || 'UTC'
+  const ctaText = (data.md && data.md.ctaText) || 'ALLOW'
+
+  const response = {
+    attachment: {
+      type: "template",
+      payload: {
+        template_type: "notification_messages",
+        title: data.title,
+        notification_messages_timezone: timezone,
+        notification_messages_cta_text: ctaText,
+        payload: JSON.stringify({ ref })
+      }
+    }
+  }
+
+  return response
+}
+
 const makeUrl = (url) => {
   if (typeof url === 'string') {
     return url
@@ -323,6 +343,7 @@ const lookup = {
   'wait': translateWait,
   'stitch': translateStitch,
   'notify': translateNotify,
+  'notification_messages': translateNotificationMessages,
   'attachment': translateAttachment,
   'upload': translateUpload,
 }
@@ -365,5 +386,7 @@ module.exports = {
   translateLegal,
   translateAttachment,
   translateUpload,
+  translateNotify,
+  translateNotificationMessages,
   makeUrl,
 }

@@ -400,6 +400,78 @@ describe('makeUrl', () => {
   })
 })
 
+describe('should translate notification_messages field', () => {
+  const notificationMessagesQuestion = {
+    id: 'test-notification-messages',
+    title: 'Enable Marketing Messages',
+    ref: 'notification-messages-ref',
+    type: 'notification_messages',
+    properties: {},
+    md: { timezone: 'America/New_York', ctaText: 'GET_UPDATES' }
+  }
+
+  const { message: translated } = translateFunctions.translator(notificationMessagesQuestion)
+
+  it('should have an attachment property', () => {
+    translated.should.have.property('attachment')
+  })
+
+  it('attachment should have type template', () => {
+    translated.attachment.should.have.property('type', 'template')
+  })
+
+  it('payload should have template_type notification_messages', () => {
+    translated.attachment.payload.should.have.property('template_type', 'notification_messages')
+  })
+
+  it('payload should have title with the question title', () => {
+    translated.attachment.payload.should.have.property('title', notificationMessagesQuestion.title)
+  })
+
+  it('payload should have notification_messages_timezone with the specified timezone', () => {
+    translated.attachment.payload.should.have.property('notification_messages_timezone', 'America/New_York')
+  })
+
+  it('payload should have notification_messages_cta_text with the specified CTA', () => {
+    translated.attachment.payload.should.have.property('notification_messages_cta_text', 'GET_UPDATES')
+  })
+
+  it('payload should have the ref encoded in JSON stringify format', () => {
+    JSON.parse(translated.attachment.payload.payload).ref.should.equal('notification-messages-ref')
+  })
+
+  it('should default timezone to UTC if not specified', () => {
+    const noTimezoneQuestion = {
+      ...notificationMessagesQuestion,
+      md: { ctaText: 'ALLOW' }
+    }
+
+    const { message } = translateFunctions.translator(noTimezoneQuestion)
+    message.attachment.payload.should.have.property('notification_messages_timezone', 'UTC')
+  })
+
+  it('should default ctaText to ALLOW if not specified', () => {
+    const noCtaQuestion = {
+      ...notificationMessagesQuestion,
+      md: { timezone: 'Europe/London' }
+    }
+
+    const { message } = translateFunctions.translator(noCtaQuestion)
+    message.attachment.payload.should.have.property('notification_messages_cta_text', 'ALLOW')
+  })
+
+  it('should default both timezone and ctaText if no md provided', () => {
+    const noMdQuestion = {
+      ...notificationMessagesQuestion,
+      md: {}
+    }
+
+    const { message } = translateFunctions.translator(noMdQuestion)
+    message.attachment.payload.should.have.property('notification_messages_timezone', 'UTC')
+    message.attachment.payload.should.have.property('notification_messages_cta_text', 'ALLOW')
+  })
+})
+
 describe('translator', () => {
   const { translator } = translateFunctions
 
