@@ -472,6 +472,67 @@ describe('should translate notification_messages field', () => {
   })
 })
 
+describe('should translate utility_message field', () => {
+  const baseQuestion = {
+    id: 'test-utility-message',
+    title: 'Results',
+    ref: 'utility-ref',
+    type: 'utility_message',
+    properties: {},
+    md: {
+      template: 'results_ready',
+      language: 'en_US',
+      params: ['Alice', '$5']
+    }
+  }
+
+  it('is wired into the translator dispatch table', () => {
+    const res = translateFunctions.translator(baseQuestion)
+    res.message.attachment.payload.should.have.property('template_type', 'utility_messages')
+  })
+
+  it('sets messaging_type to UTILITY at the top level of the send payload', () => {
+    const res = translateFunctions.translator(baseQuestion)
+    res.should.have.property('messaging_type', 'UTILITY')
+  })
+
+  it('passes template name and language into the payload', () => {
+    const { message } = translateFunctions.translator(baseQuestion)
+    message.attachment.payload.should.have.property('name', 'results_ready')
+    message.attachment.payload.language.should.have.property('code', 'en_US')
+  })
+
+  it('wraps each param in a text-parameter object in order', () => {
+    const { message } = translateFunctions.translator(baseQuestion)
+    const { parameters } = message.attachment.payload.components[0]
+    parameters.should.have.length(2)
+    parameters[0].should.deep.equal({ type: 'text', text: 'Alice' })
+    parameters[1].should.deep.equal({ type: 'text', text: '$5' })
+  })
+
+  it('coerces non-string params (e.g. numbers) into strings', () => {
+    const q = { ...baseQuestion, md: { ...baseQuestion.md, params: [42] } }
+    const { message } = translateFunctions.translator(q)
+    message.attachment.payload.components[0].parameters[0].text.should.equal('42')
+  })
+
+  it('emits an empty parameters array when params is missing', () => {
+    const q = { ...baseQuestion, md: { template: 'x', language: 'en_US' } }
+    const { message } = translateFunctions.translator(q)
+    message.attachment.payload.components[0].parameters.should.deep.equal([])
+  })
+
+  it('throws when template is missing — (name, language) is the template identity', () => {
+    const q = { ...baseQuestion, md: { language: 'en_US' } }
+    ;(() => translateFunctions.translator(q)).should.throw(/template/)
+  })
+
+  it('throws when language is missing — no silent default', () => {
+    const q = { ...baseQuestion, md: { template: 'results_ready' } }
+    ;(() => translateFunctions.translator(q)).should.throw(/language/)
+  })
+})
+
 describe('translator', () => {
   const { translator } = translateFunctions
 

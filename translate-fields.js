@@ -232,6 +232,40 @@ const translateNotify = (data, ref) => {
   return response
 }
 
+const translateUtilityMessage = (data, ref) => {
+  const md = data.md || {}
+  const { template, language, params } = md
+
+  if (!template) {
+    throw new TypeError('utility_message field missing required "template" in its YAML description')
+  }
+  if (!language) {
+    throw new TypeError('utility_message field missing required "language" in its YAML description')
+  }
+
+  const paramList = Array.isArray(params) ? params : []
+
+  const response = {
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'utility_messages',
+        name: template,
+        language: { code: language },
+        components: [{
+          type: 'body',
+          parameters: paramList.map(text => ({ type: 'text', text: String(text) }))
+        }]
+      }
+    },
+    metadata: {
+      sendParams: { messaging_type: 'UTILITY' }
+    }
+  }
+
+  return response
+}
+
 const translateNotificationMessages = (data, ref) => {
   const timezone = (data.md && data.md.timezone) || 'UTC'
   const ctaText = (data.md && data.md.ctaText) || 'ALLOW'
@@ -344,6 +378,7 @@ const lookup = {
   'stitch': translateStitch,
   'notify': translateNotify,
   'notification_messages': translateNotificationMessages,
+  'utility_message': translateUtilityMessage,
   'attachment': translateAttachment,
   'upload': translateUpload,
 }
@@ -388,5 +423,6 @@ module.exports = {
   translateUpload,
   translateNotify,
   translateNotificationMessages,
+  translateUtilityMessage,
   makeUrl,
 }
