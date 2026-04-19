@@ -234,7 +234,7 @@ const translateNotify = (data, ref) => {
 
 const translateUtilityMessage = (data, ref) => {
   const md = data.md || {}
-  const { template, language, params } = md
+  const { template, language, params, buttons } = md
 
   if (!template) {
     throw new TypeError('utility_message field missing required "template" in its YAML description')
@@ -245,25 +245,49 @@ const translateUtilityMessage = (data, ref) => {
 
   const paramList = Array.isArray(params) ? params : []
 
-  const response = {
+  const components = [{
+    type: 'body',
+    parameters: paramList.map(text => ({ type: 'text', text: String(text) }))
+  }]
+
+  // Quick-reply buttons declared on the approved template are rendered per-send
+  // with per-button payloads. We mirror the multi-choice payload shape
+  // (JSON.stringify({value, ref})) so user taps arrive on replybot's existing
+  // QUICK_REPLY handler (machine.js) — no new code paths downstream.
+  if (buttons !== undefined) {
+    if (!Array.isArray(buttons)) {
+      throw new TypeError('utility_message "buttons" must be an array of strings')
+    }
+    buttons.forEach((value, index) => {
+      if (typeof value !== 'string' || !value) {
+        throw new TypeError(`utility_message buttons[${index}] must be a non-empty string`)
+      }
+      components.push({
+        type: 'button',
+        sub_type: 'quick_reply',
+        index,
+        parameters: [{
+          type: 'payload',
+          payload: JSON.stringify({ value, ref })
+        }]
+      })
+    })
+  }
+
+  return {
     attachment: {
       type: 'template',
       payload: {
         template_type: 'utility_messages',
         name: template,
         language: { code: language },
-        components: [{
-          type: 'body',
-          parameters: paramList.map(text => ({ type: 'text', text: String(text) }))
-        }]
+        components
       }
     },
     metadata: {
       sendParams: { messaging_type: 'UTILITY' }
     }
   }
-
-  return response
 }
 
 const translateNotificationMessages = (data, ref) => {

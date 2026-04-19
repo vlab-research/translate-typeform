@@ -531,6 +531,57 @@ describe('should translate utility_message field', () => {
     const q = { ...baseQuestion, md: { template: 'results_ready' } }
     ;(() => translateFunctions.translator(q)).should.throw(/language/)
   })
+
+  describe('with quick-reply buttons', () => {
+    const withButtons = {
+      ...baseQuestion,
+      md: { ...baseQuestion.md, buttons: ['yes', 'no'] }
+    }
+
+    it('emits body first, then one button component per entry in order', () => {
+      const { message } = translateFunctions.translator(withButtons)
+      const { components } = message.attachment.payload
+      components.should.have.length(3)
+      components[0].type.should.equal('body')
+      components[1].type.should.equal('button')
+      components[1].sub_type.should.equal('quick_reply')
+      components[1].index.should.equal(0)
+      components[2].index.should.equal(1)
+    })
+
+    it('payload matches makeMultipleChoice shape so replybot QUICK_REPLY handler fires', () => {
+      // Same JSON.stringify({value, ref}) pattern as translate-fields.js:37.
+      // Replybot machine.js:473-486 will parse and extract .value identically
+      // to a regular multi-choice quick reply.
+      const { message } = translateFunctions.translator(withButtons)
+      const { components } = message.attachment.payload
+      const decoded0 = JSON.parse(components[1].parameters[0].payload)
+      const decoded1 = JSON.parse(components[2].parameters[0].payload)
+      decoded0.should.deep.equal({ value: 'yes', ref: 'utility-ref' })
+      decoded1.should.deep.equal({ value: 'no', ref: 'utility-ref' })
+    })
+
+    it('omits button components when buttons is absent (backward-compatible)', () => {
+      const { message } = translateFunctions.translator(baseQuestion)
+      message.attachment.payload.components.should.have.length(1)
+      message.attachment.payload.components[0].type.should.equal('body')
+    })
+
+    it('throws when buttons is not an array', () => {
+      const q = { ...baseQuestion, md: { ...baseQuestion.md, buttons: 'yes,no' } }
+      ;(() => translateFunctions.translator(q)).should.throw(/array/)
+    })
+
+    it('throws on empty-string button entry — would render as an invisible button', () => {
+      const q = { ...baseQuestion, md: { ...baseQuestion.md, buttons: ['yes', ''] } }
+      ;(() => translateFunctions.translator(q)).should.throw(/buttons\[1\]/)
+    })
+
+    it('throws on non-string button entry', () => {
+      const q = { ...baseQuestion, md: { ...baseQuestion.md, buttons: [42] } }
+      ;(() => translateFunctions.translator(q)).should.throw(/buttons\[0\]/)
+    })
+  })
 })
 
 describe('translator', () => {
