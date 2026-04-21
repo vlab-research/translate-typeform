@@ -532,33 +532,32 @@ describe('should translate utility_message field', () => {
     ;(() => translateFunctions.translator(q)).should.throw(/language/)
   })
 
-  describe('with quick-reply buttons', () => {
+  describe('with postback buttons', () => {
     const withButtons = {
       ...baseQuestion,
       md: { ...baseQuestion.md, buttons: ['yes', 'no'] }
     }
 
-    it('emits body first, then one button component per entry in order', () => {
+    it('emits body first, then one postback component per entry in order', () => {
       const { message } = translateFunctions.translator(withButtons)
       const { components } = message.attachment.payload
       components.should.have.length(3)
       components[0].type.should.equal('body')
       components[1].type.should.equal('button')
-      components[1].sub_type.should.equal('quick_reply')
+      components[1].sub_type.should.equal('postback')
       components[1].index.should.equal(0)
       components[2].index.should.equal(1)
     })
 
-    it('payload matches makeMultipleChoice shape so replybot QUICK_REPLY handler fires', () => {
-      // Same JSON.stringify({value, ref}) pattern as translate-fields.js:37.
-      // Replybot machine.js:473-486 will parse and extract .value identically
-      // to a regular multi-choice quick reply.
+    it('substitutes the field ref into each button parameter', () => {
+      // Messenger utility templates only accept POSTBACK buttons at creation
+      // time, and POSTBACK requires a payload baked in. The approved template
+      // carries {"value":"<label>","ref":"{{1}}"} for each button; at send
+      // time we substitute the actual field ref via a text parameter.
       const { message } = translateFunctions.translator(withButtons)
       const { components } = message.attachment.payload
-      const decoded0 = JSON.parse(components[1].parameters[0].payload)
-      const decoded1 = JSON.parse(components[2].parameters[0].payload)
-      decoded0.should.deep.equal({ value: 'yes', ref: 'utility-ref' })
-      decoded1.should.deep.equal({ value: 'no', ref: 'utility-ref' })
+      components[1].parameters.should.deep.equal([{ type: 'text', text: 'utility-ref' }])
+      components[2].parameters.should.deep.equal([{ type: 'text', text: 'utility-ref' }])
     })
 
     it('omits button components when buttons is absent (backward-compatible)', () => {

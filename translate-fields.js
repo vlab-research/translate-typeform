@@ -250,10 +250,13 @@ const translateUtilityMessage = (data, ref) => {
     parameters: paramList.map(text => ({ type: 'text', text: String(text) }))
   }]
 
-  // Quick-reply buttons declared on the approved template are rendered per-send
-  // with per-button payloads. We mirror the multi-choice payload shape
-  // (JSON.stringify({value, ref})) so user taps arrive on replybot's existing
-  // QUICK_REPLY handler (machine.js) — no new code paths downstream.
+  // Messenger utility templates only accept POSTBACK buttons at creation time
+  // (QUICK_REPLY is rejected with a "Fatal" error). The approved template has
+  // a {{1}} placeholder baked into each button's payload where the ref goes;
+  // here we substitute the actual field ref at send time. The `value` is
+  // already baked into each button's payload at approval time. Button taps
+  // arrive as messaging_postbacks, which replybot's POSTBACK handler
+  // (machine.js) parses the same way as QUICK_REPLY.
   if (buttons !== undefined) {
     if (!Array.isArray(buttons)) {
       throw new TypeError('utility_message "buttons" must be an array of strings')
@@ -264,12 +267,9 @@ const translateUtilityMessage = (data, ref) => {
       }
       components.push({
         type: 'button',
-        sub_type: 'quick_reply',
+        sub_type: 'postback',
         index,
-        parameters: [{
-          type: 'payload',
-          payload: JSON.stringify({ value, ref })
-        }]
+        parameters: [{ type: 'text', text: ref }]
       })
     })
   }
