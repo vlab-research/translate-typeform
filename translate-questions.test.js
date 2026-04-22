@@ -532,13 +532,18 @@ describe('should translate utility_message field', () => {
     ;(() => translateFunctions.translator(q)).should.throw(/language/)
   })
 
-  describe('with postback buttons', () => {
+  describe('with postback buttons (driven by multiple_choice properties.choices)', () => {
+    // Authors put the utility_message YAML on a `multiple_choice` question.
+    // The question's own `properties.choices` define the buttons — same ones
+    // Typeform's native logic editor uses to branch on the user's answer.
+    // Choice labels must match the approved template's button labels (the
+    // approved payload bakes in value=label).
     const withButtons = {
       ...baseQuestion,
-      md: { ...baseQuestion.md, buttons: ['yes', 'no'] }
+      properties: { choices: [{ label: 'yes' }, { label: 'no' }] }
     }
 
-    it('emits body first, then one postback component per entry in order', () => {
+    it('emits body first, then one postback component per choice in order', () => {
       const { message } = translateFunctions.translator(withButtons)
       const { components } = message.attachment.payload
       components.should.have.length(3)
@@ -550,35 +555,24 @@ describe('should translate utility_message field', () => {
     })
 
     it('substitutes the field ref into each button parameter', () => {
-      // Messenger utility templates only accept POSTBACK buttons at creation
-      // time, and POSTBACK requires a payload baked in. The approved template
-      // carries {"value":"<label>","ref":"{{1}}"} for each button; at send
-      // time we substitute the actual field ref via a text parameter.
+      // The approved template carries {"value":"<label>","ref":"{{1}}"} for
+      // each button; at send time we substitute the actual field ref via a
+      // text parameter. Label→value equality is locked at approval time.
       const { message } = translateFunctions.translator(withButtons)
       const { components } = message.attachment.payload
       components[1].parameters.should.deep.equal([{ type: 'text', text: 'utility-ref' }])
       components[2].parameters.should.deep.equal([{ type: 'text', text: 'utility-ref' }])
     })
 
-    it('omits button components when buttons is absent (backward-compatible)', () => {
+    it('omits button components when properties.choices is absent (text-only template)', () => {
       const { message } = translateFunctions.translator(baseQuestion)
       message.attachment.payload.components.should.have.length(1)
       message.attachment.payload.components[0].type.should.equal('body')
     })
 
-    it('throws when buttons is not an array', () => {
-      const q = { ...baseQuestion, md: { ...baseQuestion.md, buttons: 'yes,no' } }
-      ;(() => translateFunctions.translator(q)).should.throw(/array/)
-    })
-
-    it('throws on empty-string button entry — would render as an invisible button', () => {
-      const q = { ...baseQuestion, md: { ...baseQuestion.md, buttons: ['yes', ''] } }
-      ;(() => translateFunctions.translator(q)).should.throw(/buttons\[1\]/)
-    })
-
-    it('throws on non-string button entry', () => {
-      const q = { ...baseQuestion, md: { ...baseQuestion.md, buttons: [42] } }
-      ;(() => translateFunctions.translator(q)).should.throw(/buttons\[0\]/)
+    it('throws when properties.choices is not an array', () => {
+      const q = { ...baseQuestion, properties: { choices: 'yes,no' } }
+      ;(() => translateFunctions.translator(q)).should.throw(/choices.*array/)
     })
   })
 })

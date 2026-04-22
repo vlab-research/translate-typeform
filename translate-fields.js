@@ -234,7 +234,7 @@ const translateNotify = (data, ref) => {
 
 const translateUtilityMessage = (data, ref) => {
   const md = data.md || {}
-  const { template, language, params, buttons } = md
+  const { template, language, params } = md
 
   if (!template) {
     throw new TypeError('utility_message field missing required "template" in its YAML description')
@@ -250,29 +250,26 @@ const translateUtilityMessage = (data, ref) => {
     parameters: paramList.map(text => ({ type: 'text', text: String(text) }))
   }]
 
-  // Messenger utility templates only accept POSTBACK buttons at creation time
-  // (QUICK_REPLY is rejected with a "Fatal" error). The approved template has
-  // a {{1}} placeholder baked into each button's payload where the ref goes;
-  // here we substitute the actual field ref at send time. The `value` is
-  // already baked into each button's payload at approval time. Button taps
-  // arrive as messaging_postbacks, which replybot's POSTBACK handler
-  // (machine.js) parses the same way as QUICK_REPLY.
-  if (buttons !== undefined) {
-    if (!Array.isArray(buttons)) {
-      throw new TypeError('utility_message "buttons" must be an array of strings')
-    }
-    buttons.forEach((value, index) => {
-      if (typeof value !== 'string' || !value) {
-        throw new TypeError(`utility_message buttons[${index}] must be a non-empty string`)
-      }
-      components.push({
-        type: 'button',
-        sub_type: 'postback',
-        index,
-        parameters: [{ type: 'text', text: ref }]
-      })
-    })
+  // Buttons come from the Typeform question's own `properties.choices` — this
+  // is only meaningful on a `multiple_choice` question, where Typeform's
+  // native logic editor already reads the same choices to drive branching.
+  // Authors define the buttons once (on the multiple_choice question) and the
+  // labels must match the approved template's button labels — the approved
+  // template's baked-in payload (`{"value":"<label>","ref":"{{1}}"}`) is what
+  // the user's tap returns. A statement-type utility_message with no choices
+  // is fine for text-only templates.
+  const choices = (data.properties && data.properties.choices) || []
+  if (!Array.isArray(choices)) {
+    throw new TypeError('utility_message: expected question.properties.choices to be an array')
   }
+  choices.forEach((choice, index) => {
+    components.push({
+      type: 'button',
+      sub_type: 'postback',
+      index,
+      parameters: [{ type: 'text', text: ref }]
+    })
+  })
 
   return {
     attachment: {
