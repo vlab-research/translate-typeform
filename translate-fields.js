@@ -262,13 +262,12 @@ const translateUtilityMessage = (data, ref) => {
   if (!Array.isArray(choices)) {
     throw new TypeError('utility_message: expected question.properties.choices to be an array')
   }
-  choices.forEach((choice, index) => {
+  if (choices.length > 0) {
     components.push({
       type: 'buttons',
-      index,
-      parameters: [{ type: 'POSTBACK', payload: ref }]
+      parameters: choices.map(() => ({ type: 'POSTBACK', payload: ref }))
     })
-  })
+  }
 
   return {
     template: {

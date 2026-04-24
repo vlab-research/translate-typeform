@@ -545,14 +545,18 @@ describe('should translate utility_message field', () => {
       properties: { choices: [{ label: 'yes' }, { label: 'no' }] }
     }
 
-    it('emits body first, then one buttons component per choice in order', () => {
+    it('emits body first, then a single buttons component (one POSTBACK parameter per choice, positional)', () => {
+      // Facebook rejects a per-button `index` key with "Invalid keys 'index'".
+      // It also rejects one component per button. The accepted shape is a
+      // single `buttons` component whose `parameters` array has one entry per
+      // button, matched positionally to the approved template's button list.
       const { message } = translateFunctions.translator(withButtons)
       const { components } = message.template
-      components.should.have.length(3)
+      components.should.have.length(2)
       components[0].type.should.equal('body')
       components[1].type.should.equal('buttons')
-      components[1].index.should.equal(0)
-      components[2].index.should.equal(1)
+      components[1].should.not.have.property('index')
+      components[1].parameters.should.have.length(2)
     })
 
     it('substitutes the field ref into each button parameter as POSTBACK payload', () => {
@@ -561,9 +565,11 @@ describe('should translate utility_message field', () => {
       // we pass in the POSTBACK payload parameter. Label→value equality is
       // locked at approval time.
       const { message } = translateFunctions.translator(withButtons)
-      const { components } = message.template
-      components[1].parameters.should.deep.equal([{ type: 'POSTBACK', payload: 'utility-ref' }])
-      components[2].parameters.should.deep.equal([{ type: 'POSTBACK', payload: 'utility-ref' }])
+      const { parameters } = message.template.components[1]
+      parameters.should.deep.equal([
+        { type: 'POSTBACK', payload: 'utility-ref' },
+        { type: 'POSTBACK', payload: 'utility-ref' }
+      ])
     })
 
     it('omits button components when properties.choices is absent (text-only template)', () => {
