@@ -264,22 +264,17 @@ const translateUtilityMessage = (data, ref) => {
   }
   choices.forEach((choice, index) => {
     components.push({
-      type: 'button',
-      sub_type: 'postback',
+      type: 'buttons',
       index,
-      parameters: [{ type: 'text', text: ref }]
+      parameters: [{ type: 'POSTBACK', payload: ref }]
     })
   })
 
   return {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'utility_messages',
-        name: template,
-        language: { code: language },
-        components
-      }
+    template: {
+      name: template,
+      language: { code: language },
+      components
     },
     metadata: {
       sendParams: { messaging_type: 'UTILITY' }

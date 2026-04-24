@@ -486,9 +486,11 @@ describe('should translate utility_message field', () => {
     }
   }
 
-  it('is wired into the translator dispatch table', () => {
+  it('is wired into the translator dispatch table and uses Messenger\'s message.template shape (no template_type, no attachment wrapper)', () => {
     const res = translateFunctions.translator(baseQuestion)
-    res.message.attachment.payload.should.have.property('template_type', 'utility_messages')
+    res.message.should.have.property('template')
+    res.message.should.not.have.property('attachment')
+    res.message.template.should.not.have.property('template_type')
   })
 
   it('sets messaging_type to UTILITY at the top level of the send payload', () => {
@@ -498,13 +500,13 @@ describe('should translate utility_message field', () => {
 
   it('passes template name and language into the payload', () => {
     const { message } = translateFunctions.translator(baseQuestion)
-    message.attachment.payload.should.have.property('name', 'results_ready')
-    message.attachment.payload.language.should.have.property('code', 'en_US')
+    message.template.should.have.property('name', 'results_ready')
+    message.template.language.should.have.property('code', 'en_US')
   })
 
   it('wraps each param in a text-parameter object in order', () => {
     const { message } = translateFunctions.translator(baseQuestion)
-    const { parameters } = message.attachment.payload.components[0]
+    const { parameters } = message.template.components[0]
     parameters.should.have.length(2)
     parameters[0].should.deep.equal({ type: 'text', text: 'Alice' })
     parameters[1].should.deep.equal({ type: 'text', text: '$5' })
@@ -513,13 +515,13 @@ describe('should translate utility_message field', () => {
   it('coerces non-string params (e.g. numbers) into strings', () => {
     const q = { ...baseQuestion, md: { ...baseQuestion.md, params: [42] } }
     const { message } = translateFunctions.translator(q)
-    message.attachment.payload.components[0].parameters[0].text.should.equal('42')
+    message.template.components[0].parameters[0].text.should.equal('42')
   })
 
   it('emits an empty parameters array when params is missing', () => {
     const q = { ...baseQuestion, md: { template: 'x', language: 'en_US' } }
     const { message } = translateFunctions.translator(q)
-    message.attachment.payload.components[0].parameters.should.deep.equal([])
+    message.template.components[0].parameters.should.deep.equal([])
   })
 
   it('throws when template is missing — (name, language) is the template identity', () => {
@@ -543,31 +545,31 @@ describe('should translate utility_message field', () => {
       properties: { choices: [{ label: 'yes' }, { label: 'no' }] }
     }
 
-    it('emits body first, then one postback component per choice in order', () => {
+    it('emits body first, then one buttons component per choice in order', () => {
       const { message } = translateFunctions.translator(withButtons)
-      const { components } = message.attachment.payload
+      const { components } = message.template
       components.should.have.length(3)
       components[0].type.should.equal('body')
-      components[1].type.should.equal('button')
-      components[1].sub_type.should.equal('postback')
+      components[1].type.should.equal('buttons')
       components[1].index.should.equal(0)
       components[2].index.should.equal(1)
     })
 
-    it('substitutes the field ref into each button parameter', () => {
+    it('substitutes the field ref into each button parameter as POSTBACK payload', () => {
       // The approved template carries {"value":"<label>","ref":"{{1}}"} for
-      // each button; at send time we substitute the actual field ref via a
-      // text parameter. Label→value equality is locked at approval time.
+      // each button; at send time Facebook substitutes {{1}} with the value
+      // we pass in the POSTBACK payload parameter. Label→value equality is
+      // locked at approval time.
       const { message } = translateFunctions.translator(withButtons)
-      const { components } = message.attachment.payload
-      components[1].parameters.should.deep.equal([{ type: 'text', text: 'utility-ref' }])
-      components[2].parameters.should.deep.equal([{ type: 'text', text: 'utility-ref' }])
+      const { components } = message.template
+      components[1].parameters.should.deep.equal([{ type: 'POSTBACK', payload: 'utility-ref' }])
+      components[2].parameters.should.deep.equal([{ type: 'POSTBACK', payload: 'utility-ref' }])
     })
 
     it('omits button components when properties.choices is absent (text-only template)', () => {
       const { message } = translateFunctions.translator(baseQuestion)
-      message.attachment.payload.components.should.have.length(1)
-      message.attachment.payload.components[0].type.should.equal('body')
+      message.template.components.should.have.length(1)
+      message.template.components[0].type.should.equal('body')
     })
 
     it('throws when properties.choices is not an array', () => {
