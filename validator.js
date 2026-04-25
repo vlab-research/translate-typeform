@@ -69,6 +69,26 @@ function validateButtonChoice(field, messages) {
   }
 }
 
+// Validator for utility_message — postback buttons on a Messenger utility
+// template. The approved template bakes in `value == button_label` per
+// button, so the set of valid response values is the labels of
+// properties.choices (same source the translator uses to emit the buttons
+// component). Text-only utility messages have no choices and accept no
+// reply input, but we still install a validator so the dispatch table
+// doesn't throw on the question type.
+function validateUtilityMessage(field, messages) {
+  const choices = (field.properties && field.properties.choices) || []
+  const labels = choices.map(c => c.label)
+
+  return r => {
+    if (labels.length === 0) {
+      return validateStatement(field, messages)(r)
+    }
+    const responseValue = (r && typeof r === 'object' && r.value !== undefined) ? r.value : r
+    return _validateMC(responseValue, labels, messages)
+  }
+}
+
 
 function alwaysTrue(field, messages) {
 
@@ -285,6 +305,7 @@ const lookup = {
   thankyou_screen: validateStatement,
   multiple_choice: validateQR,
   button_choice: validateButtonChoice,
+  utility_message: validateUtilityMessage,
   rating: validateQR,
   opinion_scale: validateQR,
   legal: validateLegalYesNo,

@@ -318,4 +318,63 @@ describe('validator', () => {
       res.message.should.equal('Sorry, please use the buttons provided to answer the question.')
     })
   })
+
+  describe('validateUtilityMessage', () => {
+    // The approved Messenger utility template bakes in `value == button_label`
+    // for each POSTBACK button, so the set of valid response values is the
+    // labels of properties.choices — same source the translator reads to emit
+    // the buttons component.
+    const field = {
+      type: 'utility_message',
+      title: 'Survey results',
+      ref: 'utility-ref',
+      properties: {
+        choices: [
+          { id: '1', ref: 'a', label: 'yes' },
+          { id: '2', ref: 'b', label: 'no' }
+        ]
+      },
+      md: {
+        template: 'results_ready',
+        language: 'en_US',
+        params: ['Alice']
+      }
+    }
+
+    it('is registered in the dispatch table (no longer throws)', () => {
+      ;(() => v.validator(field)).should.not.throw()
+    })
+
+    it('validates string response matching a choice label', () => {
+      v.validator(field)('yes').valid.should.equal(true)
+      v.validator(field)('no').valid.should.equal(true)
+    })
+
+    it('invalidates string response not matching any choice', () => {
+      v.validator(field)('maybe').valid.should.equal(false)
+    })
+
+    it('validates postback payload object with value property', () => {
+      v.validator(field)({ value: 'yes', ref: 'utility-ref' }).valid.should.equal(true)
+      v.validator(field)({ value: 'no', ref: 'utility-ref' }).valid.should.equal(true)
+    })
+
+    it('invalidates postback payload with invalid value', () => {
+      v.validator(field)({ value: 'maybe', ref: 'utility-ref' }).valid.should.equal(false)
+    })
+
+    it('returns the buttons-required error for an invalid response', () => {
+      const res = v.validator(field)('Invalid')
+      res.valid.should.equal(false)
+      res.message.should.equal('Sorry, please use the buttons provided to answer the question.')
+    })
+
+    it('falls back to statement-style behavior for text-only templates (no choices)', () => {
+      // A utility_message with no buttons accepts no reply — model it as a
+      // statement (always invalid), so the error path is consistent with
+      // other statement-style fields.
+      const textOnly = { ...field, properties: {} }
+      v.validator(textOnly)('any').valid.should.equal(false)
+    })
+  })
 })
