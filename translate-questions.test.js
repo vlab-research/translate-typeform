@@ -284,17 +284,8 @@ describe('should translate questions asking for email', () => {
   it('should have a text property with the title of the questions', () => {
     translated.should.have.property('text', emailQuestion.title)
   })
-  it('should have a quick_replies property of type array', () => {
-    translated.quick_replies.should.be.an('array')
-  })
-  it('quick_replies should have one element in it', () => {
-    translated.quick_replies.should.have.length(1)
-  })
-  it('quick_reply should be an object with property "content_type" of "user_email"', () => {
-    translated.quick_replies[0].should.have.property('content_type', 'user_email')
-  })
-  it('quick_reply should not have property "payload"', () => {
-    translated.quick_replies[0].should.not.have.property('payload')
+  it('should send as plain text without quick_replies', () => {
+    translated.should.not.have.property('quick_replies')
   })
 })
 

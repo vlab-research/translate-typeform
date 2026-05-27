@@ -99,26 +99,9 @@ const translateLegal = (data, ref) => {
   return makeMultipleChoice(data.title, [{label: 'I Accept'}, {label: "I don't Accept"}], ref)
 }
 
-//email to quick reply (fb has qr button for sending email assoc with account)
-const translateEmail = data => {
-  const response = translateShortText(data)
-  response.quick_replies = [
-    {
-      content_type: 'user_email'
-    },
-  ]
-  return response
-}
+const translateEmail = translateShortText
 
-const translatePhone = data => {
-  const response = translateShortText(data)
-  response.quick_replies = [
-    {
-      content_type: 'user_phone_number'
-    },
-  ]
-  return response
-}
+const translatePhone = translateShortText
 
 const translateRatings = (data, ref) => {
   const start = data.properties.start_at_one === false ? 0 : 1
