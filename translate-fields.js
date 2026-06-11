@@ -197,6 +197,7 @@ const translateShare = (data) => {
 
 const translateWait = translateShortText
 const translateStitch = translateShortText
+const translateHandoff = translateShortText
 const translateUpload = translateShortText
 
 const translateNotify = (data, ref) => {
@@ -374,6 +375,7 @@ const lookup = {
   'webview': translateWebview,
   'wait': translateWait,
   'stitch': translateStitch,
+  'handoff': translateHandoff,
   'notify': translateNotify,
   'notification_messages': translateNotificationMessages,
   'utility_message': translateUtilityMessage,
@@ -419,6 +421,7 @@ module.exports = {
   translateLegal,
   translateAttachment,
   translateUpload,
+  translateHandoff,
   translateNotify,
   translateNotificationMessages,
   translateUtilityMessage,
