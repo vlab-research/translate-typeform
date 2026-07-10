@@ -257,6 +257,10 @@ function _isPhone(number, country, mobile) {
   return !!phone('' + number, country, !mobile)[0]
 }
 
+function normalizePhone(number, country, mobile) {
+  return phone('' + number, country || '', !mobile)[0] || null
+}
+
 function validatePhone(field, messages) {
   const { message: q } = translator(field)
   const md = JSON.parse(q.metadata)
@@ -315,6 +319,7 @@ const lookup = {
   share: validateStatement,
   webview: validateStatement,
   wait: validateStatement,
+  handoff: validateStatement,
   notify: validateNotify,
   email: validateEmail,
   phone_number: validatePhone,
@@ -353,4 +358,4 @@ function validator(field, messages = {}) {
 }
 
 
-module.exports = { validator, defaultMessage, followUpMessage, offMessage, normalizeUnicodeNumerals, parseNumber }
+module.exports = { validator, defaultMessage, followUpMessage, offMessage, normalizeUnicodeNumerals, parseNumber, normalizePhone }
